@@ -3,9 +3,9 @@ use bevy::color::palettes::basic::WHITE;
 use bevy::color::palettes::css::RED;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
-use crate::physics::Velocity;
+use crate::physics::*;
 #[derive(Component, Default, Clone)]
-#[require(BulletSpeed)]
+#[require(BulletSpeed, ColorCharge)]
 pub struct Bullet;
 
 #[derive(Component, Clone)]
@@ -49,8 +49,9 @@ impl Default for BulletTarget {
     }
 }
 
-#[derive(Component, Clone)]
-#[require(Transform)]
+#[derive(Component, Clone, Reflect)]
+#[reflect(Component)]
+#[require(Transform, ColorCharge)]
 pub struct Hitbox(pub f32);
 impl Default for Hitbox {
     fn default() -> Self {
@@ -106,11 +107,6 @@ fn bullet_sys(mut commands: Commands,
         });
     }
 }
-// fn bullet_sys(mut commands: Commands,
-//               mut bullet_query: Query<(&Bullet, &Trajectory, &Velocity)>) {
-//
-// }
-
 fn despawn_bullets(mut commands: Commands, mut bullet_query: Query<(&Bullet, &Transform, Entity)>) {
     for (bullet, transform, entity) in bullet_query.iter() {
         if transform.translation.x.abs() > 100. || transform.translation.z.abs() > 100. {
@@ -121,17 +117,36 @@ fn despawn_bullets(mut commands: Commands, mut bullet_query: Query<(&Bullet, &Tr
 
 fn debug_bullets(mut commands: Commands,
                  mut gizmos: Gizmos,
-                 bullet_query: Query<(&Bullet, &Transform)>
+                 bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>
     ) {
-    for (bullet, transform) in bullet_query.iter() {
-        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), 0.5, RED);
+    for (bullet, cc, transform) in bullet_query.iter() {
+        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), 0.5, cc.debug_color());
     }
 }
 
-fn debug_hitboxes(mut gizmos: Gizmos, hitboxes: Query<(&Hitbox, &Transform)>) {
-    for (hitbox, transform) in hitboxes.iter() {
-        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), hitbox.0, WHITE);
+fn debug_hitboxes(mut gizmos: Gizmos, hitboxes: Query<(&Hitbox, &ColorCharge, &Transform)>) {
+    for (hitbox, cc, transform) in hitboxes.iter() {
+        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), hitbox.0, cc.debug_color());
     }
+}
+
+#[derive(Event)]
+pub struct RetargetBullet {
+    pub bullet: Entity,
+    pub new_target: Entity,
+    pub new_owner: Entity,
+}
+
+fn on_retarget_bullet(e: On<RetargetBullet>,
+                      mut bullets: Query<(Entity, &mut BulletOwner, &mut BulletTarget, &mut Velocity, &Transform, &BulletSpeed)>,
+                      hittable: Query<(Entity, &Hitbox, &Transform)>,
+                      mut commands: Commands,) {
+    let (bullet, mut b_owner, mut b_target, mut b_velocity,
+        b_transform, b_speed) = bullets.get_mut(e.bullet).unwrap();
+    b_owner.0 = e.new_owner;
+    b_target.0 = e.new_target;
+    let (_, _, h_transform) = hittable.get(e.new_target).unwrap();
+    b_velocity.0 = aim_bullet(b_transform.translation, h_transform.translation) * b_speed.0;
 }
 
 pub struct BulletsPlugin;
@@ -139,10 +154,11 @@ impl Plugin for BulletsPlugin {
     fn build(&self, app: &mut App ) {
         let assets = app.get_asset_server();
         app.init_resource::<BulletAssets>();
-        app.add_systems(FixedUpdate, bullet_sys);
+        // app.add_systems(FixedUpdate, bullet_sys);
         app.add_systems(FixedUpdate, despawn_bullets);
         app.add_systems(FixedUpdate, debug_bullets);
         app.add_systems(FixedUpdate, debug_hitboxes);
         app.add_systems(FixedUpdate, bullet_collisions);
+        app.add_observer(on_retarget_bullet);
     }
 }
