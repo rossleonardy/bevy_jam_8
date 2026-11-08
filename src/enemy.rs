@@ -3,46 +3,6 @@ use crate::physics::*;
 use crate::player::*;
 use bevy::prelude::*;
 
-fn spawn_enemy(
-    _commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let _mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    let _material = materials.add(StandardMaterial::default());
-
-    // commands.spawn_scene(bsn! {
-    //     #EnemyOne
-    //     Mesh3d(mesh)
-    //     MeshMaterial3d<StandardMaterial>(material)
-    //     Transform::from_xyz(0.0, 0.0, 10.0)
-    //     Cooldown::repeat(2000)
-    //     Hitbox
-    //     on(|ev: On<CooldownFinished>, mut commands: Commands,
-    //         query: Query<(&Transform)>,
-    //         player: Single<(&Transform, Entity), With<Player>>| {
-    //             let e = ev.entity;
-    //         let origin = query.get(ev.entity).unwrap().clone();
-    //         let (p_transform, player) = player.into_inner();
-    //         let aim = aim_bullet(origin.translation, p_transform.translation) * 20.;
-    //         commands.spawn_scene(bsn! {
-    //             Bullet
-    //             ColorCharge::RED
-    //             origin
-    //             Velocity(aim)
-    //             BulletTarget(player)
-    //             BulletOwner(e)
-    //         });
-    //     })
-    //
-    // });
-
-    // commands.spawn_scene(bsn! {
-    //     @enemy_alpha()
-    //     Transform::from_xyz(0.0, 0.0, -10.0)
-    // });
-}
-
 #[derive(Component, Default, Clone)]
 pub struct Enemy;
 

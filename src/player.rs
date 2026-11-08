@@ -6,11 +6,9 @@ use bevy::prelude::*;
 use std::time::Duration;
 
 const RUN_SPEED: f32 = 6.0;
-const SPRINT_SPEED: f32 = 6.0;
 const ACCELERATION: f32 = 18.0;
 const DECELERATION: f32 = 25.0;
 const TURN_RATE: f32 = 450_f32.to_radians();
-const GRAVITY: f32 = 20.0;
 
 const P_HEIGHT: f32 = 1.8;
 const P_RADIUS: f32 = 0.3;
@@ -144,8 +142,6 @@ fn on_player_bullet_hit(
         }
     }
 }
-
-const SPEED: f32 = 10.0;
 
 fn apply_move(
     time: Res<Time>,
