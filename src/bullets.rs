@@ -1,6 +1,6 @@
+use crate::physics::*;
 use bevy::asset::io::embedded::GetAssetServer;
 use bevy::prelude::*;
-use crate::physics::*;
 
 #[derive(Resource)]
 struct BulletAssets {
@@ -42,16 +42,20 @@ fn bullet_emissive(cc: &ColorCharge) -> LinearRgba {
         BULLET_GLOW
     };
 
-    LinearRgba::rgb(color.red * strength, color.green * strength, color.blue * strength)
+    LinearRgba::rgb(
+        color.red * strength,
+        color.green * strength,
+        color.blue * strength,
+    )
 }
 
 fn bullet_material(cc: &ColorCharge) -> StandardMaterial {
-   StandardMaterial {
-       base_color: bullet_base_color(cc),
-       emissive: bullet_emissive(cc),
-       unlit: true,
-       ..default()
-   }
+    StandardMaterial {
+        base_color: bullet_base_color(cc),
+        emissive: bullet_emissive(cc),
+        unlit: true,
+        ..default()
+    }
 }
 
 impl FromWorld for BulletAssets {
@@ -90,7 +94,7 @@ impl Default for BulletProps {
 
 impl Bullet {
     fn scene(props: BulletProps) -> impl Scene {
-        let BulletProps { target, owner , cc} = props;
+        let BulletProps { target, owner, cc } = props;
         let material_cc = cc;
         bsn! {
             BulletSpeed
@@ -163,9 +167,15 @@ fn bullet_collisions(
             continue;
         };
 
-        let hit = b_transform.translation.distance_squared(t_transform.translation) <= hitbox.0 * hitbox.0;
+        let hit = b_transform
+            .translation
+            .distance_squared(t_transform.translation)
+            <= hitbox.0 * hitbox.0;
         if hit {
-            commands.trigger(BulletHit { target: target.0, bullet_entity: bullet });
+            commands.trigger(BulletHit {
+                target: target.0,
+                bullet_entity: bullet,
+            });
             //commands.entity(bullet).despawn();
         }
     }
@@ -183,18 +193,27 @@ fn despawn_bullets(mut commands: Commands, bullet_query: Query<(&Bullet, &Transf
     }
 }
 
-fn debug_bullets(_commands: Commands,
-                 mut gizmos: Gizmos,
-                 bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>
-    ) {
+fn debug_bullets(
+    _commands: Commands,
+    mut gizmos: Gizmos,
+    bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>,
+) {
     for (_bullet, cc, transform) in bullet_query.iter() {
-        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), 0.5, cc.debug_color());
+        gizmos.sphere(
+            Isometry3d::new(transform.translation, transform.rotation),
+            0.5,
+            cc.debug_color(),
+        );
     }
 }
 
 fn debug_hitboxes(mut gizmos: Gizmos, hitboxes: Query<(&Hitbox, &ColorCharge, &Transform)>) {
     for (hitbox, cc, transform) in hitboxes.iter() {
-        gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), hitbox.0, cc.debug_color());
+        gizmos.sphere(
+            Isometry3d::new(transform.translation, transform.rotation),
+            hitbox.0,
+            cc.debug_color(),
+        );
     }
 }
 
@@ -205,12 +224,21 @@ pub struct RetargetBullet {
     pub new_owner: Entity,
 }
 
-fn on_retarget_bullet(e: On<RetargetBullet>,
-                      mut bullets: Query<(Entity, &mut BulletOwner, &mut BulletTarget, &mut Velocity, &Transform, &BulletSpeed)>,
-                      hittable: Query<(Entity, &Hitbox, &Transform)>,
-                      _commands: Commands,) {
-    let (_bullet, mut b_owner, mut b_target, mut b_velocity,
-        b_transform, b_speed) = bullets.get_mut(e.bullet).unwrap();
+fn on_retarget_bullet(
+    e: On<RetargetBullet>,
+    mut bullets: Query<(
+        Entity,
+        &mut BulletOwner,
+        &mut BulletTarget,
+        &mut Velocity,
+        &Transform,
+        &BulletSpeed,
+    )>,
+    hittable: Query<(Entity, &Hitbox, &Transform)>,
+    _commands: Commands,
+) {
+    let (_bullet, mut b_owner, mut b_target, mut b_velocity, b_transform, b_speed) =
+        bullets.get_mut(e.bullet).unwrap();
     b_owner.0 = e.new_owner;
     b_target.0 = e.new_target;
     let (_, _, h_transform) = hittable.get(e.new_target).unwrap();
@@ -219,7 +247,7 @@ fn on_retarget_bullet(e: On<RetargetBullet>,
 
 pub struct BulletsPlugin;
 impl Plugin for BulletsPlugin {
-    fn build(&self, app: &mut App ) {
+    fn build(&self, app: &mut App) {
         let _assets = app.get_asset_server();
         app.init_resource::<BulletAssets>();
         app.add_systems(FixedUpdate, despawn_bullets);

@@ -3,5 +3,5 @@ pub mod enemy;
 pub mod inputs;
 pub mod physics;
 pub mod player;
-pub mod ui;
 pub mod spawner;
+pub mod ui;

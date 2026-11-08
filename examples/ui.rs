@@ -3,21 +3,20 @@ use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_jam_8::bullets::BulletsPlugin;
 use bevy_jam_8::physics::*;
-use bevy_jam_8::ui::*;
 use bevy_jam_8::player::*;
+use bevy_jam_8::ui::*;
 
 fn setup(mut commands: Commands) {
-    commands.spawn_scene(
-        bsn! {
-            Camera3d
-        }
-    );
+    commands.spawn_scene(bsn! {
+        Camera3d
+    });
 }
 
 fn rotate_sys(
     keys: Res<ButtonInput<KeyCode>>,
-    mut i: Single<(& mut ColorSkills)>,
-    mut ui_parent: Single<&mut UiTransform, With<CircleParent>>) {
+    mut i: Single<(&mut ColorSkills)>,
+    mut ui_parent: Single<&mut UiTransform, With<CircleParent>>,
+) {
     if keys.just_pressed(KeyCode::ArrowLeft) {
         i.0 -= 1;
     }
@@ -26,10 +25,21 @@ fn rotate_sys(
     }
 }
 
-fn cooldowns(keys: Res<ButtonInput<KeyCode>>,
-             mut red_skill: Single<(&mut Cooldown), (With<RedSkill>, Without<GreenSkill>, Without<BlueSkill>)>,
-            mut green_skill: Single<(&mut Cooldown), (With<GreenSkill>, Without<RedSkill>, Without<BlueSkill>)>,
-            mut blue_skill: Single<(&mut Cooldown), (With<BlueSkill>, Without<RedSkill>, Without<GreenSkill>)>) {
+fn cooldowns(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut red_skill: Single<
+        (&mut Cooldown),
+        (With<RedSkill>, Without<GreenSkill>, Without<BlueSkill>),
+    >,
+    mut green_skill: Single<
+        (&mut Cooldown),
+        (With<GreenSkill>, Without<RedSkill>, Without<BlueSkill>),
+    >,
+    mut blue_skill: Single<
+        (&mut Cooldown),
+        (With<BlueSkill>, Without<RedSkill>, Without<GreenSkill>),
+    >,
+) {
     if keys.just_pressed(KeyCode::KeyR) {
         red_skill.0.reset();
     }

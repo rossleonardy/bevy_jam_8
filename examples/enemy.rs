@@ -1,15 +1,15 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_jam_8::{bullets, enemy, inputs, physics, player, ui};
 use bevy_jam_8::player::Player;
+use bevy_jam_8::{bullets, enemy, inputs, physics, player, ui};
 
 fn setup(mut commands: Commands) {
     commands.spawn_scene(enemy::enemy_alpha());
 }
 
 fn init_scene() -> impl SceneList {
-    bsn_list!{
+    bsn_list! {
         Camera3d
         Transform::from_xyz(0.0, 10.0, -20.0).looking_at(Vec3::ZERO, Vec3::Y)
         --
@@ -21,7 +21,7 @@ fn init_scene() -> impl SceneList {
     }
 }
 
-fn main () {
+fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin::default())

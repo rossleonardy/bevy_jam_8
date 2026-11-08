@@ -1,7 +1,7 @@
-use bevy::color::palettes::basic::*;
-use bevy::prelude::*;
 use crate::physics::Cooldown;
 use crate::player::{BlueSkill, ColorSkills, GreenSkill, RedSkill};
+use bevy::color::palettes::basic::*;
+use bevy::prelude::*;
 
 pub struct UiPlugin;
 
@@ -12,17 +12,20 @@ const DECAY_RATE: f32 = 46.0;
 
 fn rotate_sys(
     time: Res<Time>,
-    color_skills: Single<&ColorSkills >,
-    mut ui_parent: Single<&mut UiTransform, With<CircleParent>>) {
+    color_skills: Single<&ColorSkills>,
+    mut ui_parent: Single<&mut UiTransform, With<CircleParent>>,
+) {
     let f: f32 = color_skills.0 as f32;
     let target = Rot2::turn_fraction(-f / 3.);
     if ui_parent.rotation == target {
-        return
+        return;
     }
     if ui_parent.rotation.angle_to(target).abs() < 0.001 {
         ui_parent.rotation = target;
     } else {
-        ui_parent.rotation.smooth_nudge(&target, DECAY_RATE, time.delta_secs());
+        ui_parent
+            .rotation
+            .smooth_nudge(&target, DECAY_RATE, time.delta_secs());
     }
 }
 
@@ -119,7 +122,6 @@ fn circle_parent() -> impl Scene {
     }
 }
 
-
 fn ui_scene() -> impl Scene {
     bsn! {
         #RootUi
@@ -147,37 +149,54 @@ fn ui_scene() -> impl Scene {
 }
 
 fn red_skill_update(
-    red_cooldown: Single<&Cooldown , With<RedSkill>>,
+    red_cooldown: Single<&Cooldown, With<RedSkill>>,
     red_ui: Single<(&mut BackgroundColor, &mut Outline), With<RedSkill>>,
 ) {
     let (mut background, mut outline) = red_ui.into_inner();
     let f = red_cooldown.0.fraction();
     background.0 = Color::srgb(f, 0.0, 0.0);
-    outline.color = if red_cooldown.0.is_finished() { Color:: WHITE } else { Color::NONE };
+    outline.color = if red_cooldown.0.is_finished() {
+        Color::WHITE
+    } else {
+        Color::NONE
+    };
 }
 
 fn green_skill_update(
-    green_cooldown: Single<&Cooldown , With<GreenSkill>>,
-    green_ui: Single<(&mut BackgroundColor, &mut Outline), With<GreenSkill>>,){
+    green_cooldown: Single<&Cooldown, With<GreenSkill>>,
+    green_ui: Single<(&mut BackgroundColor, &mut Outline), With<GreenSkill>>,
+) {
     let (mut background, mut outline) = green_ui.into_inner();
     let f = green_cooldown.0.fraction();
     background.0 = Color::srgb(0.0, f, 0.0);
-    outline.color = if green_cooldown.0.is_finished() { Color:: WHITE } else { Color::NONE };
+    outline.color = if green_cooldown.0.is_finished() {
+        Color::WHITE
+    } else {
+        Color::NONE
+    };
 }
 
 fn blue_skill_update(
-    blue_cooldown: Single<&Cooldown , With<BlueSkill>>,
-    blue_ui: Single<(&mut BackgroundColor, &mut Outline), With<BlueSkill>>,){
+    blue_cooldown: Single<&Cooldown, With<BlueSkill>>,
+    blue_ui: Single<(&mut BackgroundColor, &mut Outline), With<BlueSkill>>,
+) {
     let (mut background, mut outline) = blue_ui.into_inner();
     let f = blue_cooldown.0.fraction();
     background.0 = Color::srgb(0.0, 0.0, f);
-    outline.color = if blue_cooldown.0.is_finished() { Color:: WHITE } else { Color::NONE };
+    outline.color = if blue_cooldown.0.is_finished() {
+        Color::WHITE
+    } else {
+        Color::NONE
+    };
 }
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, ui_scene.spawn());
-        app.add_systems(Update, (red_skill_update, green_skill_update, blue_skill_update));
+        app.add_systems(
+            Update,
+            (red_skill_update, green_skill_update, blue_skill_update),
+        );
         app.add_systems(Update, rotate_sys);
     }
 }

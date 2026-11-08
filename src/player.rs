@@ -1,9 +1,9 @@
-use std::time::Duration;
-use bevy::prelude::*;
-use crate::inputs;
 use crate::bullets::{BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBullet};
+use crate::inputs;
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
+use bevy::prelude::*;
+use std::time::Duration;
 
 const RUN_SPEED: f32 = 6.0;
 const SPRINT_SPEED: f32 = 6.0;
@@ -26,7 +26,6 @@ pub struct PlayerAssets {
 #[derive(Component, Default, Clone)]
 #[require(Transform, Velocity, Hitbox, ColorCharge)]
 pub struct Player;
-
 
 #[derive(Component, Default, Clone, Reflect)]
 #[reflect(Component)]
@@ -67,7 +66,13 @@ fn player_assets(
 
     let texture: Handle<Image> = asset_server.load("direction_arrow.png");
     //let cuboid = Cuboid::new(0.5, 2., 0.5);
-    let mesh =  asset_server.load(GltfAssetLabel::Primitive { mesh: 0, primitive: 0 }.from_asset("TEST_HERO.glb"));
+    let mesh = asset_server.load(
+        GltfAssetLabel::Primitive {
+            mesh: 0,
+            primitive: 0,
+        }
+        .from_asset("TEST_HERO.glb"),
+    );
     commands.insert_resource(PlayerAssets {
         mesh,
         material: materials.add(Color::srgb(0.2, 0.2, 1.0)),
@@ -81,10 +86,7 @@ fn player_assets(
     });
 }
 
-fn spawn_player(
-    mut commands: Commands,
-    player_assets: Res<PlayerAssets>
-) {
+fn spawn_player(mut commands: Commands, player_assets: Res<PlayerAssets>) {
     let mesh = player_assets.mesh.clone();
     let material = player_assets.material.clone();
 
@@ -116,10 +118,11 @@ fn spawn_player(
     });
 }
 
-fn on_player_bullet_hit(e: On<BulletHit>,
-                        mut commands: Commands,
-                        mut bullets: Query<(&BulletOwner, &BulletTarget, &mut ColorCharge), Without<Player>>,
-                        player: Single<(Entity, &SkillState, &ColorCharge), With<Player>>,
+fn on_player_bullet_hit(
+    e: On<BulletHit>,
+    mut commands: Commands,
+    mut bullets: Query<(&BulletOwner, &BulletTarget, &mut ColorCharge), Without<Player>>,
+    player: Single<(Entity, &SkillState, &ColorCharge), With<Player>>,
 ) {
     let bullet = e.bullet_entity;
     let (b_owner, _b_target, mut b_cc) = bullets.get_mut(bullet).unwrap();
@@ -140,7 +143,6 @@ fn on_player_bullet_hit(e: On<BulletHit>,
             println!("Bullet hit")
         }
     }
-
 }
 
 const SPEED: f32 = 10.0;
@@ -149,7 +151,8 @@ fn apply_move(
     time: Res<Time>,
     input: Res<inputs::AccumulatedMove>,
     camera: Single<&Transform, (With<Camera3d>, Without<Player>)>,
-    player: Single<(&mut Transform, &mut Velocity), With<Player>>) {
+    player: Single<(&mut Transform, &mut Velocity), With<Player>>,
+) {
     let (mut transform, mut velocity) = player.into_inner();
     let dt = time.delta_secs();
     let input = input.0.clamp_length_max(1.0);
@@ -157,11 +160,15 @@ fn apply_move(
     let forward = camera.forward().as_vec3().with_y(0.0).normalize_or_zero();
     let right = camera.right().as_vec3().with_y(0.0).normalize_or_zero();
     let direction = right * input.x + forward * input.y;
-        // Vec3::new(input.x, 0.0, -input.y);
-    let rate = if input == Vec2::ZERO { DECELERATION } else { ACCELERATION };
+    // Vec3::new(input.x, 0.0, -input.y);
+    let rate = if input == Vec2::ZERO {
+        DECELERATION
+    } else {
+        ACCELERATION
+    };
 
-    let vel = Vec3::new(velocity.0.x, 0.0, velocity.0.z)
-        .move_towards(direction * RUN_SPEED, rate * dt);
+    let vel =
+        Vec3::new(velocity.0.x, 0.0, velocity.0.z).move_towards(direction * RUN_SPEED, rate * dt);
     velocity.0.x = vel.x;
     velocity.0.z = vel.z;
 
@@ -177,8 +184,9 @@ fn skill_transition(
     time: Res<Time>,
     player: Single<(&mut SkillState, &SkillTiming, &mut Hitbox), With<Player>>,
     color_skills: Single<(&mut ColorSkills, &Children)>,
-    mut skill_cooldowns: Query<&mut Cooldown >,
-    lr: Res<AccumulatedLR>) {
+    mut skill_cooldowns: Query<&mut Cooldown>,
+    lr: Res<AccumulatedLR>,
+) {
     let (mut skill_state, timing, mut hitbox) = player.into_inner();
     let (mut color_skills, skill_children) = color_skills.into_inner();
     skill_state.timer.tick(time.delta());
@@ -189,60 +197,60 @@ fn skill_transition(
                 skill_state.status = SkillStatus::Idle;
             }
         }
-        SkillStatus::Idle => {
-            match lr.into_inner() {
-                AccumulatedLR::Left => {
-                    let len = skill_children.len() as isize;
-                    let prev = color_skills.0 - 1;
-                    let prev_skill_child = skill_children[prev.rem_euclid(len) as usize];
-                    let mut prev_skill_cooldown = skill_cooldowns.get_mut(prev_skill_child).unwrap();
-                    if prev_skill_cooldown.0.is_finished()  {
-                        println!("LEFT OK!");
-                        color_skills.0 -= 1;
-                        skill_state.status = SkillStatus::Startup;
-                        skill_state.timer = Timer::new(Duration::from_millis(timing.startup), TimerMode::Once);
-                        prev_skill_cooldown.0.reset();
-                    }
+        SkillStatus::Idle => match lr.into_inner() {
+            AccumulatedLR::Left => {
+                let len = skill_children.len() as isize;
+                let prev = color_skills.0 - 1;
+                let prev_skill_child = skill_children[prev.rem_euclid(len) as usize];
+                let mut prev_skill_cooldown = skill_cooldowns.get_mut(prev_skill_child).unwrap();
+                if prev_skill_cooldown.0.is_finished() {
+                    println!("LEFT OK!");
+                    color_skills.0 -= 1;
+                    skill_state.status = SkillStatus::Startup;
+                    skill_state.timer =
+                        Timer::new(Duration::from_millis(timing.startup), TimerMode::Once);
+                    prev_skill_cooldown.0.reset();
                 }
-                AccumulatedLR::Right => {
-                    let len = skill_children.len() as isize;
-                    let next = color_skills.0 + 1;
-                    let next_skill_child = skill_children[next.rem_euclid(len) as usize];
-                    let mut next_skill_cooldown = skill_cooldowns.get_mut(next_skill_child).unwrap();
-                    if next_skill_cooldown.0.is_finished()  {
-                        println!("RIGHT OK!");
-                        color_skills.0 += 1;
-                        skill_state.status = SkillStatus::Startup;
-                        skill_state.timer = Timer::new(Duration::from_millis(timing.startup), TimerMode::Once);
-                        next_skill_cooldown.0.reset();
-                    }
-                    ;
-
-                    println!("Right");
-                },
-                AccumulatedLR::None => {
-
-                },
             }
-        }
+            AccumulatedLR::Right => {
+                let len = skill_children.len() as isize;
+                let next = color_skills.0 + 1;
+                let next_skill_child = skill_children[next.rem_euclid(len) as usize];
+                let mut next_skill_cooldown = skill_cooldowns.get_mut(next_skill_child).unwrap();
+                if next_skill_cooldown.0.is_finished() {
+                    println!("RIGHT OK!");
+                    color_skills.0 += 1;
+                    skill_state.status = SkillStatus::Startup;
+                    skill_state.timer =
+                        Timer::new(Duration::from_millis(timing.startup), TimerMode::Once);
+                    next_skill_cooldown.0.reset();
+                };
+
+                println!("Right");
+            }
+            AccumulatedLR::None => {}
+        },
         SkillStatus::Startup => {
             if skill_state.timer.is_finished() {
                 hitbox.0 = 1.0;
                 skill_state.status = SkillStatus::Active;
-                skill_state.timer = Timer::new(Duration::from_millis(timing.active), TimerMode::Once);
+                skill_state.timer =
+                    Timer::new(Duration::from_millis(timing.active), TimerMode::Once);
             }
         }
         SkillStatus::Active => {
             if skill_state.timer.is_finished() {
                 hitbox.0 = 0.5;
                 skill_state.status = SkillStatus::Recovery;
-                skill_state.timer = Timer::new(Duration::from_millis(timing.recovery), TimerMode::Once);
+                skill_state.timer =
+                    Timer::new(Duration::from_millis(timing.recovery), TimerMode::Once);
             }
         }
         SkillStatus::Recovery => {
             if skill_state.timer.is_finished() {
                 skill_state.status = SkillStatus::Cooldown;
-                skill_state.timer = Timer::new(Duration::from_millis(timing.cooldown), TimerMode::Once);
+                skill_state.timer =
+                    Timer::new(Duration::from_millis(timing.cooldown), TimerMode::Once);
             }
         }
     }
@@ -262,7 +270,6 @@ fn player_debug(_gizmos: Gizmos, _player: Single<(&SkillState, &Transform), With
     // }
 }
 
-
 // fn player_deflect_skill(
 //     mut commands: Commands,
 //     player_query: Single<(Entity, &Transform, &SkillState)>,
@@ -280,7 +287,6 @@ fn player_debug(_gizmos: Gizmos, _player: Single<(&SkillState, &Transform), With
 //     }
 // }
 
-
 #[derive(Component, Default, Clone)]
 pub struct RedSkill;
 #[derive(Component, Default, Clone)]
@@ -294,12 +300,11 @@ pub struct GreenSkill;
 #[reflect(Component)]
 pub struct ColorSkills(pub isize);
 
-
 pub fn copy_player_color_from_skills(
-    color_skills: Single<&ColorSkills >,
-    player: Single<&mut ColorCharge , With<Player>>,
+    color_skills: Single<&ColorSkills>,
+    player: Single<&mut ColorCharge, With<Player>>,
 ) {
-    let mut cc  = player.into_inner();
+    let mut cc = player.into_inner();
     let i = color_skills.0.rem_euclid(3);
     *cc = match i {
         0 => ColorCharge::RED,
@@ -341,16 +346,15 @@ pub fn player_skills() -> impl Scene {
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(PreStartup, player_assets)
+        app.add_systems(PreStartup, player_assets)
             .add_systems(Startup, spawn_player)
             .add_systems(Startup, player_skills.spawn())
             .add_systems(FixedUpdate, apply_move)
             .add_systems(Update, player_debug)
             .add_systems(FixedUpdate, skill_transition);
         app.add_systems(FixedUpdate, copy_player_color_from_skills);
-            // .add_systems(FixedUpdate, player_deflect_skill);
-            // .add_observer(swat_left)
-            // .add_observer(swat_right);
+        // .add_systems(FixedUpdate, player_deflect_skill);
+        // .add_observer(swat_left)
+        // .add_observer(swat_right);
     }
 }

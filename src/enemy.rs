@@ -1,11 +1,13 @@
-use bevy::prelude::*;
 use crate::bullets::{Bullet, BulletHit, Hitbox};
 use crate::physics::*;
 use crate::player::*;
+use bevy::prelude::*;
 
-fn spawn_enemy(_commands: Commands,
-               mut meshes: ResMut<Assets<Mesh>>,
-               mut materials: ResMut<Assets<StandardMaterial>>,) {
+fn spawn_enemy(
+    _commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     let _mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
     let _material = materials.add(StandardMaterial::default());
 
@@ -43,7 +45,6 @@ fn spawn_enemy(_commands: Commands,
 
 #[derive(Component, Default, Clone)]
 pub struct Enemy;
-
 
 #[derive(Component, Default, Clone)]
 pub struct SpeciesAlpha;
@@ -107,9 +108,7 @@ pub fn spin_y_ai(mut enemies: Query<(&mut Transform, &SpinY)>) {
     }
 }
 
-fn enemy_ai(_enemies: Query<&Transform , With<Enemy>>) {
-
-}
+fn enemy_ai(_enemies: Query<&Transform, With<Enemy>>) {}
 
 pub struct EnemyPlugin;
 

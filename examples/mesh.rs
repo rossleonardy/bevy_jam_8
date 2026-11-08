@@ -1,6 +1,6 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
-use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::gltf::GltfPlugin;
+use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
@@ -10,7 +10,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 const CAMERA_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 10.0);
 
 fn mesh_scene() -> impl SceneList {
-    bsn_list!{
+    bsn_list! {
         Camera3d
         Tonemapping::TonyMcMapface
         Bloom::NATURAL

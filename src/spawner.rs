@@ -1,7 +1,7 @@
-use std::collections::VecDeque;
-use bevy::prelude::*;
 use crate::enemy::enemy_alpha;
 use crate::physics::ColorCharge;
+use bevy::prelude::*;
+use std::collections::VecDeque;
 
 const STAGE_HALF_HEIGHT: f32 = 8.0;
 const STAGE_HALF_WIDTH: f32 = 12.0;
@@ -11,18 +11,18 @@ fn ellipse_angle(half_width: f32, half_height: f32, angle: f32) -> Vec2 {
     Vec2::new(half_width * angle.cos(), half_height * angle.sin())
 }
 
-fn stage_edge(angle:f32) -> Vec2 {
+fn stage_edge(angle: f32) -> Vec2 {
     ellipse_angle(STAGE_HALF_WIDTH, STAGE_HALF_HEIGHT, -angle)
 }
 
-fn stage_edge_3(angle:f32) -> Vec3 {
+fn stage_edge_3(angle: f32) -> Vec3 {
     let xz = stage_edge(angle);
     Vec3::new(xz.x, 0.0, xz.y)
 }
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct SpawnQueue {
-    queue: VecDeque<Box<dyn Scene>>
+    queue: VecDeque<Box<dyn Scene>>,
 }
 
 impl Default for SpawnQueue {
@@ -38,7 +38,8 @@ impl Default for SpawnQueue {
                         Transform::from_translation(stage_edge_3(30.))
                     ]
                     #TestGroup
-                }.into(),
+                }
+                .into(),
                 bsn! {
                     @EnemyGroup
                     Transform::default()
@@ -47,7 +48,8 @@ impl Default for SpawnQueue {
                         ColorCharge::RED
                         Transform::from_translation(stage_edge_3(150.))
                     ]
-                }.into(),
+                }
+                .into(),
                 bsn! {
                     @EnemyGroup
                     Children [
@@ -59,8 +61,9 @@ impl Default for SpawnQueue {
                         ColorCharge::RED
                         Transform::from_translation(stage_edge_3(135.))
                     ]
-                }.into(),
-            ])
+                }
+                .into(),
+            ]),
         }
     }
 }
@@ -79,8 +82,7 @@ impl EnemyGroup {
     }
 }
 
-pub fn run_spawner(mut commands: Commands,
-    mut spawn_queue: ResMut<SpawnQueue>) {
+pub fn run_spawner(mut commands: Commands, mut spawn_queue: ResMut<SpawnQueue>) {
     if let Some(spawnable) = spawn_queue.queue.pop_front() {
         commands.spawn_scene(spawnable);
     }
@@ -89,16 +91,15 @@ pub fn run_spawner(mut commands: Commands,
 pub fn check_for_empty_groups(
     mut commands: Commands,
     mut spawn_queue: ResMut<SpawnQueue>,
-    enemy_groups: Query<(&EnemyGroup, Entity), Without<Children>>
+    enemy_groups: Query<(&EnemyGroup, Entity), Without<Children>>,
 ) {
     for (_group, entity) in enemy_groups.iter() {
-            //
+        //
         println!("Despawning group");
         commands.entity(entity).despawn();
         if let Some(spawnable) = spawn_queue.queue.pop_front() {
             commands.spawn_scene(spawnable);
         }
-
     }
 }
 

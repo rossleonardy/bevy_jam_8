@@ -1,24 +1,22 @@
-
-use bevy_jam_8::{bullets, enemy, inputs, physics, player, spawner, ui};
 use bevy::prelude::*;
+use bevy_jam_8::{bullets, enemy, inputs, physics, player, spawner, ui};
 use bevy_transform_interpolation::prelude::*;
 
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
-use std::f32::consts::FRAC_PI_2;
 use bevy::asset::AssetMetaCheck;
 use bevy::core_pipeline::tonemapping::Tonemapping;
-use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::gltf::GltfPlugin;
+use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
+use std::f32::consts::FRAC_PI_2;
 
 fn spawn_stage(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-
     commands.spawn((
         Name("Stage".into()),
         Mesh3d(meshes.add(Ellipse::new(12., 8.))),
@@ -27,14 +25,14 @@ fn spawn_stage(
             translation: Vec3::new(0.0, -1.0, 0.0),
             rotation: Quat::from_rotation_x(-FRAC_PI_2),
             scale: Vec3::splat(1.0),
-        }
+        },
     ));
 }
 
 const CAMERA_OFFSET: Vec3 = Vec3::new(0.0, 14.0, 15.0);
 
 fn init_scene() -> impl SceneList {
-    bsn_list!{
+    bsn_list! {
         Camera3d
         Tonemapping::TonyMcMapface
         Bloom::NATURAL
@@ -48,30 +46,35 @@ fn init_scene() -> impl SceneList {
 fn camera_pan(
     time: Res<Time>,
     player: Single<&Transform, With<player::Player>>,
-    mut camera: Single<&mut Transform, (With<Camera3d>, Without<player::Player>)>
+    mut camera: Single<&mut Transform, (With<Camera3d>, Without<player::Player>)>,
 ) {
     let target = player.translation * 0.5 + CAMERA_OFFSET;
-    camera.translation.smooth_nudge(&target, 3.0, time.delta_secs());
+    camera
+        .translation
+        .smooth_nudge(&target, 3.0, time.delta_secs());
 }
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set({
-            GltfPlugin {
-                convert_coordinates: GltfConvertCoordinates {
-                    rotate_meshes: true,
+        .add_plugins(
+            DefaultPlugins
+                .set({
+                    GltfPlugin {
+                        convert_coordinates: GltfConvertCoordinates {
+                            rotate_meshes: true,
+                            ..default()
+                        },
+                        ..default()
+                    }
+                })
+                .set(AssetPlugin {
+                    // Wasm builds will check for meta files (that don't exist) if this isn't set.
+                    // This causes errors and even panics in web builds on itch.
+                    // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
+                    meta_check: AssetMetaCheck::Never,
                     ..default()
-                },
-                ..default()
-            }
-        })
-            .set(AssetPlugin {
-                // Wasm builds will check for meta files (that don't exist) if this isn't set.
-                // This causes errors and even panics in web builds on itch.
-                // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
-                meta_check: AssetMetaCheck::Never,
-                ..default()
-            }))
+                }),
+        )
         .add_plugins(EguiPlugin::default())
         .add_plugins(WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::Tab)))
         .add_plugins(TransformInterpolationPlugin::interpolate_all())

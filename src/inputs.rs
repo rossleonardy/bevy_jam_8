@@ -26,7 +26,7 @@ pub struct AccumulatedMove(pub Vec2);
 pub enum AccumulatedLR {
     Left,
     Right,
-    None
+    None,
 }
 
 fn setup(mut commands: Commands) {
@@ -34,7 +34,7 @@ fn setup(mut commands: Commands) {
     commands.insert_resource(AccumulatedMove(Vec2::ZERO));
     commands.insert_resource(AccumulatedLR::None);
 
-    commands.spawn_scene(bsn !{
+    commands.spawn_scene(bsn! {
         InGame
         Actions<InGame> [
             Action<Move>::new()
@@ -86,10 +86,7 @@ fn fixed_runs_gt_zero(fixed_runs: Res<FixedRuns>) -> bool {
     fixed_runs.0 > 0
 }
 
-fn accumulate_move(
-    move_action: Single<&Action<Move>>,
-    mut move_dir: ResMut<AccumulatedMove>,
-) {
+fn accumulate_move(move_action: Single<&Action<Move>>, mut move_dir: ResMut<AccumulatedMove>) {
     let dir = ***move_action;
     if dir != Vec2::ZERO {
         move_dir.0 += dir;
@@ -118,19 +115,20 @@ fn clear_input(mut move_dir: ResMut<AccumulatedMove>, mut lr: ResMut<Accumulated
 pub struct InputsPlugin;
 impl Plugin for InputsPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(EnhancedInputPlugin)
+        app.add_plugins(EnhancedInputPlugin)
             .add_input_context::<InGame>()
             .add_systems(Startup, setup)
             .add_systems(PreUpdate, reset_fixed_run)
             .add_systems(FixedPreUpdate, inc_fixed_run)
-            .add_systems(RunFixedMainLoop,
-                         (
-                         accumulate_move.in_set(RunFixedMainLoopSystems::BeforeFixedMainLoop),
-                         accumulate_lr.in_set(RunFixedMainLoopSystems::BeforeFixedMainLoop),
-                         clear_input
-                             .run_if(fixed_runs_gt_zero)
-                             .in_set(RunFixedMainLoopSystems::AfterFixedMainLoop)
-                         ));
+            .add_systems(
+                RunFixedMainLoop,
+                (
+                    accumulate_move.in_set(RunFixedMainLoopSystems::BeforeFixedMainLoop),
+                    accumulate_lr.in_set(RunFixedMainLoopSystems::BeforeFixedMainLoop),
+                    clear_input
+                        .run_if(fixed_runs_gt_zero)
+                        .in_set(RunFixedMainLoopSystems::AfterFixedMainLoop),
+                ),
+            );
     }
 }

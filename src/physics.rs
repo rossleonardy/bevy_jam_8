@@ -1,13 +1,12 @@
-use std::time::Duration;
 use bevy::color::palettes::basic::{BLACK, BLUE, GREEN, WHITE};
 use bevy::color::palettes::css::{GRAY, RED};
 use bevy::prelude::*;
+use std::time::Duration;
 
 #[derive(Component, Default, Clone)]
 pub struct Velocity(pub Vec3);
 
-fn apply_velocity(time: Res<Time>,
-                  mut query: Query<(&mut Transform, &mut Velocity)>) {
+fn apply_velocity(time: Res<Time>, mut query: Query<(&mut Transform, &mut Velocity)>) {
     for (mut transform, velocity) in &mut query {
         transform.translation += velocity.0 * time.delta_secs();
     }
@@ -47,19 +46,23 @@ pub struct CooldownFinished {
 }
 
 impl Cooldown {
-    pub fn once(millis:u64) -> Self {
+    pub fn once(millis: u64) -> Self {
         let mut t = Timer::new(Duration::from_millis(millis), TimerMode::Once);
         t.finish();
         Self(t)
     }
-    pub fn repeat(millis:u64) -> Self {
-        Self(Timer::new(Duration::from_millis(millis), TimerMode::Repeating))
+    pub fn repeat(millis: u64) -> Self {
+        Self(Timer::new(
+            Duration::from_millis(millis),
+            TimerMode::Repeating,
+        ))
     }
 }
 
-pub fn tick_cooldowns(mut commands: Commands,
-                      time: Res<Time>,
-                      mut cooldowns: Query<(Entity, &mut Cooldown)>,
+pub fn tick_cooldowns(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut cooldowns: Query<(Entity, &mut Cooldown)>,
 ) {
     for (entity, mut cooldown) in &mut cooldowns {
         cooldown.0.tick(time.delta());
