@@ -56,6 +56,9 @@ fn setup(mut commands: Commands) {
                 --
                 Binding(KeyCode::KeyQ)
                 ~Press
+                --
+                Binding(KeyCode::Comma)
+                ~Press
             ]
             --
             Action<SwatRight>::new()
@@ -64,6 +67,9 @@ fn setup(mut commands: Commands) {
                 ~Press
                 --
                 Binding(KeyCode::KeyE)
+                ~Press
+                --
+                Binding(KeyCode::Period)
                 ~Press
             ]
         ]

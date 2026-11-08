@@ -6,6 +6,7 @@ use bevy_transform_interpolation::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
 use std::f32::consts::{FRAC_PI_2, PI};
+use bevy::asset::AssetMetaCheck;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::gltf::GltfPlugin;
@@ -64,7 +65,14 @@ fn main() {
                 },
                 ..default()
             }
-        }))
+        })
+            .set(AssetPlugin {
+                // Wasm builds will check for meta files (that don't exist) if this isn't set.
+                // This causes errors and even panics in web builds on itch.
+                // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }))
         .add_plugins(EguiPlugin::default())
         .add_plugins(WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::Tab)))
         .add_plugins(TransformInterpolationPlugin::interpolate_all())
