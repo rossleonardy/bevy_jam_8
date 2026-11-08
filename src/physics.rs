@@ -13,7 +13,7 @@ fn apply_velocity(time: Res<Time>,
     }
 }
 
-#[derive(Component, Default, Clone, Reflect, PartialEq)]
+#[derive(Component, Default, Copy, Clone, Reflect, PartialEq)]
 #[reflect(Component)]
 pub enum ColorCharge {
     #[default]

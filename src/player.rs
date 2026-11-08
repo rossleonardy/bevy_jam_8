@@ -1,7 +1,7 @@
 use std::time::Duration;
 use bevy::color::palettes::css::*;
 use bevy::prelude::*;
-use crate::inputs;
+use crate::{inputs, player};
 use crate::bullets::{Bullet, BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBullet};
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
@@ -68,8 +68,9 @@ fn player_assets(
 
     let texture: Handle<Image> = asset_server.load("direction_arrow.png");
     //let cuboid = Cuboid::new(0.5, 2., 0.5);
+    let mesh =  asset_server.load(GltfAssetLabel::Primitive { mesh: 0, primitive: 0 }.from_asset("TEST_HERO.glb"));
     commands.insert_resource(PlayerAssets {
-        mesh: meshes.add(capsule),
+        mesh,
         material: materials.add(Color::srgb(0.2, 0.2, 1.0)),
         ring_mesh: meshes.add(ring),
         ring_material: materials.add(StandardMaterial {
@@ -147,22 +148,25 @@ const SPEED: f32 = 10.0;
 
 fn apply_move(
     time: Res<Time>,
-    move_dir: Res<inputs::AccumulatedMove>,
+    input: Res<inputs::AccumulatedMove>,
+    camera: Single<&Transform, (With<Camera3d>, Without<Player>)>,
     player: Single<(&mut Transform, &mut Velocity), With<Player>>) {
     let (mut transform, mut velocity) = player.into_inner();
-    // RUN_SPEED
     let dt = time.delta_secs();
-    let move_dir = move_dir.0.clamp_length_max(1.0);
+    let input = input.0.clamp_length_max(1.0);
 
-    let direction = Vec3::new(move_dir.x, 0.0, -move_dir.y);
-    let rate = if move_dir == Vec2::ZERO { DECELERATION } else { ACCELERATION };
+    let forward = camera.forward().as_vec3().with_y(0.0).normalize_or_zero();
+    let right = camera.right().as_vec3().with_y(0.0).normalize_or_zero();
+    let direction = right * input.x + forward * input.y;
+        // Vec3::new(input.x, 0.0, -input.y);
+    let rate = if input == Vec2::ZERO { DECELERATION } else { ACCELERATION };
 
     let vel = Vec3::new(velocity.0.x, 0.0, velocity.0.z)
         .move_towards(direction * RUN_SPEED, rate * dt);
     velocity.0.x = vel.x;
     velocity.0.z = vel.z;
 
-    if move_dir != Vec2::ZERO {
+    if input != Vec2::ZERO {
         let target = Quat::from_rotation_y(f32::atan2(-direction.x, -direction.z));
         transform.rotation = transform.rotation.rotate_towards(target, TURN_RATE * dt);
     }
@@ -291,29 +295,18 @@ pub struct GreenSkill;
 #[reflect(Component)]
 pub struct ColorSkills(pub isize);
 
-// impl From<ColorSkills> for ColorCharge {
-//     fn from(cs: ColorSkills) -> Self {
-//         let i = cs.0.rem_euclid(2) as isize;
-//         match i {
-//             0 => ColorCharge::RED,
-//             1 => ColorCharge::BLUE,
-//             2 => ColorCharge::GREEN,
-//             _ => ColorCharge::WHITE,
-//         }
-//     }
-// }
 
 pub fn copy_player_color_from_skills(
     color_skills: Single<(&ColorSkills)>,
     player: Single<(&mut ColorCharge), With<Player>>,
 ) {
     let (mut cc) = player.into_inner();
-    let i = color_skills.0.rem_euclid(2);
+    let i = color_skills.0.rem_euclid(3);
     *cc = match i {
         0 => ColorCharge::RED,
-        1 => ColorCharge::BLUE,
-        2 => ColorCharge::GREEN,
-        _ => ColorCharge::WHITE,
+        1 => ColorCharge::GREEN,
+        2 => ColorCharge::BLUE,
+        _ => unreachable!(),
     };
 }
 

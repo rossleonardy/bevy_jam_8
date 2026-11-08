@@ -1,35 +1,125 @@
 use bevy::asset::io::embedded::GetAssetServer;
 use bevy::color::palettes::basic::WHITE;
 use bevy::color::palettes::css::RED;
+use bevy::ecs::template::TemplateTuple;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use crate::physics::*;
-#[derive(Component, Default, Clone)]
-#[require(BulletSpeed, ColorCharge)]
+
+#[derive(Resource)]
+struct BulletAssets {
+    pub mesh: Handle<Mesh>,
+    red: Handle<StandardMaterial>,
+    green: Handle<StandardMaterial>,
+    blue: Handle<StandardMaterial>,
+    white: Handle<StandardMaterial>,
+}
+
+impl BulletAssets {
+    pub fn material(&self, cc: ColorCharge) -> Handle<StandardMaterial> {
+        match cc {
+            ColorCharge::RED => self.red.clone(),
+            ColorCharge::GREEN => self.green.clone(),
+            ColorCharge::BLUE => self.blue.clone(),
+            ColorCharge::WHITE => self.white.clone(),
+            _ => unreachable!(),
+        }
+    }
+}
+
+fn bullet_base_color(cc: &ColorCharge) -> Color {
+    match cc {
+        ColorCharge::RED => Color::srgb(1.0, 0.1, 0.1),
+        ColorCharge::GREEN => Color::srgb(0.1, 1.0, 0.1),
+        ColorCharge::BLUE => Color::srgb(0.1, 0.1, 1.0),
+        ColorCharge::WHITE => Color::srgb(1.0, 1.0, 1.0),
+        _ => unreachable!(),
+    }
+}
+const BULLET_GLOW: f32 = 8.0;
+
+fn bullet_emissive(cc: &ColorCharge) -> LinearRgba {
+    let color = bullet_base_color(cc).to_linear();
+    let strength = if matches!(cc, ColorCharge::WHITE) {
+        BULLET_GLOW * 0.6
+    } else {
+        BULLET_GLOW
+    };
+
+    LinearRgba::rgb(color.red * strength, color.green * strength, color.blue * strength)
+}
+
+fn bullet_material(cc: &ColorCharge) -> StandardMaterial {
+   StandardMaterial {
+       base_color: bullet_base_color(cc),
+       emissive: bullet_emissive(cc),
+       unlit: true,
+       ..default()
+   }
+}
+
+impl FromWorld for BulletAssets {
+    fn from_world(world: &mut World) -> Self {
+        let mesh = world.resource_mut::<Assets<Mesh>>().add(Sphere::new(0.5));
+        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
+
+        Self {
+            mesh,
+            red: materials.add(bullet_material(&ColorCharge::RED)),
+            green: materials.add(bullet_material(&ColorCharge::GREEN)),
+            blue: materials.add(bullet_material(&ColorCharge::BLUE)),
+            white: materials.add(bullet_material(&ColorCharge::WHITE)),
+        }
+    }
+}
+
+#[derive(SceneComponent, Default, Clone)]
+#[scene(BulletProps)]
 pub struct Bullet;
+
+pub struct BulletProps {
+    pub target: Entity,
+    pub owner: Entity,
+    pub cc: ColorCharge,
+}
+impl Default for BulletProps {
+    fn default() -> Self {
+        BulletProps {
+            target: Entity::PLACEHOLDER,
+            owner: Entity::PLACEHOLDER,
+            cc: ColorCharge::RED,
+        }
+    }
+}
+
+impl Bullet {
+    fn scene(props: BulletProps) -> impl Scene {
+        let BulletProps { target, owner , cc} = props;
+        let material_cc = cc.clone();
+        bsn! {
+            BulletSpeed
+            BulletTarget(target)
+            BulletOwner(owner)
+            template(move |context| {
+                let material = context.resource::<BulletAssets>().material(material_cc);
+                Ok(
+                    MeshMaterial3d(material)
+                )
+            })
+            template(|context| {
+                let mesh = context.resource::<BulletAssets>().mesh.clone();
+                Ok(Mesh3d(mesh))
+            })
+            cc
+        }
+    }
+}
 
 #[derive(Component, Clone)]
 pub struct BulletSpeed(pub f32);
 impl Default for BulletSpeed {
     fn default() -> Self {
         BulletSpeed(20.0)
-    }
-}
-
-
-
-#[derive(Resource)]
-struct BulletAssets {
-    mesh: Handle<Mesh>,
-    material: Handle<StandardMaterial>,
-}
-
-impl FromWorld for BulletAssets {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.get_asset_server();
-        let mesh = assets.add(Sphere::new(0.5).into());
-        let material = assets.add(Color::srgb(1.0, 0.0, 0.0).into());
-        BulletAssets { mesh, material }
     }
 }
 
@@ -73,7 +163,9 @@ fn bullet_collisions(
 ) {
     for (bullet, b_transform, owner, target) in bullet_query.iter() {
         // let e = targeting.0;
-        let (hitbox, t_transform) = hitbox_query.get(target.0).unwrap();
+        let Ok((hitbox, t_transform)) = hitbox_query.get(target.0) else {
+            continue;
+        };
 
         let hit = b_transform.translation.distance_squared(t_transform.translation) <= hitbox.0 * hitbox.0;
         if hit {
@@ -87,26 +179,6 @@ pub fn aim_bullet(origin: Vec3, target: Vec3) -> Vec3 {
     (target - origin).normalize_or_zero()
 }
 
-fn bullet_sys(mut commands: Commands,
-    keyboard: Res<ButtonInput<KeyCode>>,
-    bullet_assets: Res<BulletAssets>,) {
-    let mesh = bullet_assets.mesh.clone();
-    let material = bullet_assets.material.clone();
-
-    let origin = Transform::from_xyz(10.0, 0.0, 0.0);
-    let speed = 20.0;
-    let velocity = aim_bullet(origin.translation, Vec3::ZERO) * speed;
-
-    if keyboard.pressed(KeyCode::Space) {
-        commands.spawn_scene(bsn! {
-            Bullet
-            Transform::from_xyz(10.0, 0.0, 0.0)
-            Velocity(velocity)
-            Mesh3d(mesh)
-            MeshMaterial3d<StandardMaterial>(material)
-        });
-    }
-}
 fn despawn_bullets(mut commands: Commands, mut bullet_query: Query<(&Bullet, &Transform, Entity)>) {
     for (bullet, transform, entity) in bullet_query.iter() {
         if transform.translation.x.abs() > 100. || transform.translation.z.abs() > 100. {
@@ -154,7 +226,6 @@ impl Plugin for BulletsPlugin {
     fn build(&self, app: &mut App ) {
         let assets = app.get_asset_server();
         app.init_resource::<BulletAssets>();
-        // app.add_systems(FixedUpdate, bullet_sys);
         app.add_systems(FixedUpdate, despawn_bullets);
         app.add_systems(FixedUpdate, debug_bullets);
         app.add_systems(FixedUpdate, debug_hitboxes);

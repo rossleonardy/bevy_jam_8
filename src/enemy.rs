@@ -36,10 +36,10 @@ fn spawn_enemy(mut commands: Commands,
     //
     // });
 
-    commands.spawn_scene(bsn! {
-        @enemy_alpha()
-        Transform::from_xyz(0.0, 0.0, -10.0)
-    });
+    // commands.spawn_scene(bsn! {
+    //     @enemy_alpha()
+    //     Transform::from_xyz(0.0, 0.0, -10.0)
+    // });
 }
 
 #[derive(Component, Default, Clone)]
@@ -60,22 +60,33 @@ pub fn enemy_alpha() -> impl Scene {
         on(|e: On<CooldownFinished>,
             mut commands: Commands,
             query: Query<(&Transform)>,
-            player: Single<(Entity), With<Player>>|
+            player: Single<(Entity), With<Player>>,
+            colors: Query<(&ColorCharge)>|
         {
+            let cc = *colors.get(e.entity).unwrap();
             let player = player.into_inner();
             let origin = query.get(e.entity).unwrap().clone();
             let aim = origin.forward() * 10.0;
             commands.spawn_scene(bsn! {
-                Bullet
-                ColorCharge::RED
+                @Bullet {
+                    @target: player,
+                    @owner: {e.entity},
+                    @cc: cc
+                }
                 origin
                 Velocity(aim)
-                BulletTarget(player)
-                BulletOwner({e.entity})
             });
         })
-        on(|e: On<BulletHit>| {
-            println!("Enemy hit by bullet");
+        on(|e: On<BulletHit>, mut commands: Commands, cc: Query<(&ColorCharge)>| {
+            let color = cc.get(e.bullet_entity).unwrap();
+            match color {
+                ColorCharge::WHITE => {
+                    println!("Despawning enemy");
+                    commands.entity(e.target).despawn();
+                }
+                _ => { /* do nothing */ }
+            }
+
         })
     }
 }
@@ -105,7 +116,7 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_enemy);
+        // app.add_systems(Startup, spawn_enemy);
         app.add_systems(FixedUpdate, enemy_ai);
         app.add_systems(FixedUpdate, spin_y_ai);
     }
