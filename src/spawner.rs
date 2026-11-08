@@ -91,7 +91,7 @@ pub fn check_for_empty_groups(
     mut spawn_queue: ResMut<SpawnQueue>,
     enemy_groups: Query<(&EnemyGroup, Entity), Without<Children>>
 ) {
-    for (group, entity) in enemy_groups.iter() {
+    for (_group, entity) in enemy_groups.iter() {
             //
         println!("Despawning group");
         commands.entity(entity).despawn();

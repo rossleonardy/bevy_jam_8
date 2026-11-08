@@ -1,7 +1,5 @@
 use bevy::color::palettes::basic::*;
-use bevy::math::VectorSpace;
 use bevy::prelude::*;
-use bevy::prelude::Color::Srgba;
 use crate::physics::Cooldown;
 use crate::player::{BlueSkill, ColorSkills, GreenSkill, RedSkill};
 
@@ -14,7 +12,7 @@ const DECAY_RATE: f32 = 46.0;
 
 fn rotate_sys(
     time: Res<Time>,
-    color_skills: Single<(&ColorSkills)>,
+    color_skills: Single<&ColorSkills >,
     mut ui_parent: Single<&mut UiTransform, With<CircleParent>>) {
     let f: f32 = color_skills.0 as f32;
     let target = Rot2::turn_fraction(-f / 3.);
@@ -55,7 +53,7 @@ fn circle_item_position() -> impl Scene {
         Node {
             position_type: PositionType::Absolute,
             top: px(-CIRCLE_RADIUS),
-            left: px({-CIRCLE_ITEM_SIZE /2.}),
+            left: px(-CIRCLE_ITEM_SIZE /2. ),
             width: px(CIRCLE_ITEM_SIZE),
             height: px(CIRCLE_ITEM_SIZE),
         }
@@ -149,8 +147,8 @@ fn ui_scene() -> impl Scene {
 }
 
 fn red_skill_update(
-    red_cooldown: Single<(&Cooldown), With<RedSkill>>,
-    mut red_ui: Single<(&mut BackgroundColor, &mut Outline), With<RedSkill>>,
+    red_cooldown: Single<&Cooldown , With<RedSkill>>,
+    red_ui: Single<(&mut BackgroundColor, &mut Outline), With<RedSkill>>,
 ) {
     let (mut background, mut outline) = red_ui.into_inner();
     let f = red_cooldown.0.fraction();
@@ -159,8 +157,8 @@ fn red_skill_update(
 }
 
 fn green_skill_update(
-    green_cooldown: Single<(&Cooldown), With<GreenSkill>>,
-    mut green_ui: Single<(&mut BackgroundColor, &mut Outline), With<GreenSkill>>,){
+    green_cooldown: Single<&Cooldown , With<GreenSkill>>,
+    green_ui: Single<(&mut BackgroundColor, &mut Outline), With<GreenSkill>>,){
     let (mut background, mut outline) = green_ui.into_inner();
     let f = green_cooldown.0.fraction();
     background.0 = Color::srgb(0.0, f, 0.0);
@@ -168,8 +166,8 @@ fn green_skill_update(
 }
 
 fn blue_skill_update(
-    blue_cooldown: Single<(&Cooldown), With<BlueSkill>>,
-    mut blue_ui: Single<(&mut BackgroundColor, &mut Outline), With<BlueSkill>>,){
+    blue_cooldown: Single<&Cooldown , With<BlueSkill>>,
+    blue_ui: Single<(&mut BackgroundColor, &mut Outline), With<BlueSkill>>,){
     let (mut background, mut outline) = blue_ui.into_inner();
     let f = blue_cooldown.0.fraction();
     background.0 = Color::srgb(0.0, 0.0, f);

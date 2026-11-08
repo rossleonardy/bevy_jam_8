@@ -1,8 +1,7 @@
 use std::time::Duration;
-use bevy::color::palettes::css::*;
 use bevy::prelude::*;
-use crate::{inputs, player};
-use crate::bullets::{Bullet, BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBullet};
+use crate::inputs;
+use crate::bullets::{BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBullet};
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
 
@@ -62,7 +61,7 @@ fn player_assets(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    let capsule = Capsule3d::new(P_RADIUS, P_HEIGHT - 2.0 * P_RADIUS);
+    let _capsule = Capsule3d::new(P_RADIUS, P_HEIGHT - 2.0 * P_RADIUS);
 
     let ring = Plane3d::new(Vec3::Y, Vec2::splat(1.0));
 
@@ -123,7 +122,7 @@ fn on_player_bullet_hit(e: On<BulletHit>,
                         player: Single<(Entity, &SkillState, &ColorCharge), With<Player>>,
 ) {
     let bullet = e.bullet_entity;
-    let (b_owner, b_target, mut b_cc) = bullets.get_mut(bullet).unwrap();
+    let (b_owner, _b_target, mut b_cc) = bullets.get_mut(bullet).unwrap();
     let (player, skill_state, cc) = player.into_inner();
     match skill_state.status {
         SkillStatus::Active => {
@@ -178,7 +177,7 @@ fn skill_transition(
     time: Res<Time>,
     player: Single<(&mut SkillState, &SkillTiming, &mut Hitbox), With<Player>>,
     color_skills: Single<(&mut ColorSkills, &Children)>,
-    mut skill_cooldowns: Query<(&mut Cooldown)>,
+    mut skill_cooldowns: Query<&mut Cooldown >,
     lr: Res<AccumulatedLR>) {
     let (mut skill_state, timing, mut hitbox) = player.into_inner();
     let (mut color_skills, skill_children) = color_skills.into_inner();
@@ -197,7 +196,7 @@ fn skill_transition(
                     let prev = color_skills.0 - 1;
                     let prev_skill_child = skill_children[prev.rem_euclid(len) as usize];
                     let mut prev_skill_cooldown = skill_cooldowns.get_mut(prev_skill_child).unwrap();
-                    if (prev_skill_cooldown.0.is_finished()) {
+                    if prev_skill_cooldown.0.is_finished()  {
                         println!("LEFT OK!");
                         color_skills.0 -= 1;
                         skill_state.status = SkillStatus::Startup;
@@ -210,7 +209,7 @@ fn skill_transition(
                     let next = color_skills.0 + 1;
                     let next_skill_child = skill_children[next.rem_euclid(len) as usize];
                     let mut next_skill_cooldown = skill_cooldowns.get_mut(next_skill_child).unwrap();
-                    if (next_skill_cooldown.0.is_finished()) {
+                    if next_skill_cooldown.0.is_finished()  {
                         println!("RIGHT OK!");
                         color_skills.0 += 1;
                         skill_state.status = SkillStatus::Startup;
@@ -249,7 +248,7 @@ fn skill_transition(
     }
 }
 
-fn player_debug(mut gizmos: Gizmos, player: Single<(&SkillState, &Transform), With<Player>>) {
+fn player_debug(_gizmos: Gizmos, _player: Single<(&SkillState, &Transform), With<Player>>) {
     // let (skill_state, transform) = player.into_inner();
     // // gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), 0.5, WHITE);
     // if let Some(color) = match skill_state.status {
@@ -297,10 +296,10 @@ pub struct ColorSkills(pub isize);
 
 
 pub fn copy_player_color_from_skills(
-    color_skills: Single<(&ColorSkills)>,
-    player: Single<(&mut ColorCharge), With<Player>>,
+    color_skills: Single<&ColorSkills >,
+    player: Single<&mut ColorCharge , With<Player>>,
 ) {
-    let (mut cc) = player.into_inner();
+    let mut cc  = player.into_inner();
     let i = color_skills.0.rem_euclid(3);
     *cc = match i {
         0 => ColorCharge::RED,
@@ -318,21 +317,21 @@ pub fn player_skills() -> impl Scene {
             #RedSkill
             RedSkill
             Cooldown::once(2000)
-            on(|e: On<CooldownFinished>| {
+            on(|_e: On<CooldownFinished>| {
                 println!("Red skill cooldown finished");
             })
             --
             #GreenSkill
             GreenSkill
             Cooldown::once(2000)
-            on(|e: On<CooldownFinished>| {
+            on(|_e: On<CooldownFinished>| {
                 println!("Green skill cooldown finished");
             })
             --
             #BlueSkill
             BlueSkill
             Cooldown::once(2000)
-            on(|e: On<CooldownFinished>| {
+            on(|_e: On<CooldownFinished>| {
                 println!("Blue skill cooldown finished");
             })
         ]

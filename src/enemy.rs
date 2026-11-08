@@ -1,14 +1,13 @@
-use std::time::Duration;
 use bevy::prelude::*;
-use crate::bullets::{aim_bullet, Bullet, BulletHit, BulletOwner, BulletTarget, Hitbox};
+use crate::bullets::{Bullet, BulletHit, Hitbox};
 use crate::physics::*;
 use crate::player::*;
 
-fn spawn_enemy(mut commands: Commands,
+fn spawn_enemy(_commands: Commands,
                mut meshes: ResMut<Assets<Mesh>>,
                mut materials: ResMut<Assets<StandardMaterial>>,) {
-    let mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    let material = materials.add(StandardMaterial::default());
+    let _mesh = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
+    let _material = materials.add(StandardMaterial::default());
 
     // commands.spawn_scene(bsn! {
     //     #EnemyOne
@@ -59,13 +58,13 @@ pub fn enemy_alpha() -> impl Scene {
         SpinY
         on(|e: On<CooldownFinished>,
             mut commands: Commands,
-            query: Query<(&Transform)>,
-            player: Single<(Entity), With<Player>>,
-            colors: Query<(&ColorCharge)>|
+            query: Query<&Transform >,
+            player: Single<Entity , With<Player>>,
+            colors: Query<&ColorCharge >|
         {
             let cc = *colors.get(e.entity).unwrap();
             let player = player.into_inner();
-            let origin = query.get(e.entity).unwrap().clone();
+            let origin = *query.get(e.entity).unwrap();
             let aim = origin.forward() * 10.0;
             commands.spawn_scene(bsn! {
                 @Bullet {
@@ -77,7 +76,7 @@ pub fn enemy_alpha() -> impl Scene {
                 Velocity(aim)
             });
         })
-        on(|e: On<BulletHit>, mut commands: Commands, cc: Query<(&ColorCharge)>| {
+        on(|e: On<BulletHit>, mut commands: Commands, cc: Query<&ColorCharge >| {
             let color = cc.get(e.bullet_entity).unwrap();
             match color {
                 ColorCharge::WHITE => {
@@ -108,7 +107,7 @@ pub fn spin_y_ai(mut enemies: Query<(&mut Transform, &SpinY)>) {
     }
 }
 
-fn enemy_ai(enemies: Query<(&Transform), With<Enemy>>) {
+fn enemy_ai(_enemies: Query<&Transform , With<Enemy>>) {
 
 }
 

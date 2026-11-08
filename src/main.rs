@@ -5,14 +5,13 @@ use bevy_transform_interpolation::prelude::*;
 
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
-use std::f32::consts::{FRAC_PI_2, PI};
+use std::f32::consts::FRAC_PI_2;
 use bevy::asset::AssetMetaCheck;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::gltf::GltfPlugin;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
-use bevy::window::WindowWrapper;
 
 fn spawn_stage(
     mut commands: Commands,

@@ -1,8 +1,4 @@
 use bevy::asset::io::embedded::GetAssetServer;
-use bevy::color::palettes::basic::WHITE;
-use bevy::color::palettes::css::RED;
-use bevy::ecs::template::TemplateTuple;
-use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use crate::physics::*;
 
@@ -95,7 +91,7 @@ impl Default for BulletProps {
 impl Bullet {
     fn scene(props: BulletProps) -> impl Scene {
         let BulletProps { target, owner , cc} = props;
-        let material_cc = cc.clone();
+        let material_cc = cc;
         bsn! {
             BulletSpeed
             BulletTarget(target)
@@ -161,7 +157,7 @@ fn bullet_collisions(
     bullet_query: Query<(Entity, &Transform, &BulletOwner, &BulletTarget), With<Bullet>>,
     hitbox_query: Query<(&Hitbox, &Transform), Without<Bullet>>,
 ) {
-    for (bullet, b_transform, owner, target) in bullet_query.iter() {
+    for (bullet, b_transform, _owner, target) in bullet_query.iter() {
         // let e = targeting.0;
         let Ok((hitbox, t_transform)) = hitbox_query.get(target.0) else {
             continue;
@@ -179,19 +175,19 @@ pub fn aim_bullet(origin: Vec3, target: Vec3) -> Vec3 {
     (target - origin).normalize_or_zero()
 }
 
-fn despawn_bullets(mut commands: Commands, mut bullet_query: Query<(&Bullet, &Transform, Entity)>) {
-    for (bullet, transform, entity) in bullet_query.iter() {
+fn despawn_bullets(mut commands: Commands, bullet_query: Query<(&Bullet, &Transform, Entity)>) {
+    for (_bullet, transform, entity) in bullet_query.iter() {
         if transform.translation.x.abs() > 100. || transform.translation.z.abs() > 100. {
             commands.get_entity(entity).unwrap().despawn()
         }
     }
 }
 
-fn debug_bullets(mut commands: Commands,
+fn debug_bullets(_commands: Commands,
                  mut gizmos: Gizmos,
                  bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>
     ) {
-    for (bullet, cc, transform) in bullet_query.iter() {
+    for (_bullet, cc, transform) in bullet_query.iter() {
         gizmos.sphere(Isometry3d::new(transform.translation, transform.rotation), 0.5, cc.debug_color());
     }
 }
@@ -212,8 +208,8 @@ pub struct RetargetBullet {
 fn on_retarget_bullet(e: On<RetargetBullet>,
                       mut bullets: Query<(Entity, &mut BulletOwner, &mut BulletTarget, &mut Velocity, &Transform, &BulletSpeed)>,
                       hittable: Query<(Entity, &Hitbox, &Transform)>,
-                      mut commands: Commands,) {
-    let (bullet, mut b_owner, mut b_target, mut b_velocity,
+                      _commands: Commands,) {
+    let (_bullet, mut b_owner, mut b_target, mut b_velocity,
         b_transform, b_speed) = bullets.get_mut(e.bullet).unwrap();
     b_owner.0 = e.new_owner;
     b_target.0 = e.new_target;
@@ -224,7 +220,7 @@ fn on_retarget_bullet(e: On<RetargetBullet>,
 pub struct BulletsPlugin;
 impl Plugin for BulletsPlugin {
     fn build(&self, app: &mut App ) {
-        let assets = app.get_asset_server();
+        let _assets = app.get_asset_server();
         app.init_resource::<BulletAssets>();
         app.add_systems(FixedUpdate, despawn_bullets);
         app.add_systems(FixedUpdate, debug_bullets);
