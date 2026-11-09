@@ -2,8 +2,7 @@ use crate::bullets::{BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBulle
 use crate::inputs;
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
-use crate::player_assets::{PlayerAssets, PlayerAssetsPlugin, PlayerMaterial};
-use bevy::gltf::gltf::Animation;
+use crate::player_assets::{PlayerAssets, PlayerAssetsPlugin};
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -11,9 +10,6 @@ const RUN_SPEED: f32 = 7.0;
 const ACCELERATION: f32 = 18.0;
 const DECELERATION: f32 = 25.0;
 const TURN_RATE: f32 = 450_f32.to_radians();
-
-const P_HEIGHT: f32 = 1.8;
-const P_RADIUS: f32 = 0.3;
 
 #[derive(Component, Default, Clone)]
 #[require(Transform, Velocity, Hitbox, ColorCharge)]
@@ -29,7 +25,7 @@ struct SkillTiming {
 }
 
 #[derive(Default, Clone, Reflect, PartialEq)]
-enum SkillStatus {
+pub enum SkillStatus {
     Cooldown,
     #[default]
     Idle,
@@ -46,11 +42,21 @@ pub struct SkillState {
     pub timer: Timer,
 }
 
+#[derive(Component, Default, Clone, Reflect)]
+#[reflect(Component)]
+pub struct PlayerHealth(pub(crate) f32);
+
+// some = is invuln, none = not invuln
+#[derive(Component, Default, Clone)]
+struct Invulnerable(Option<f32>);
+
 pub fn player() -> impl Scene {
     bsn! {
         #Player
         Player
+        PlayerHealth(100.0)
         Velocity(Vec3::ZERO)
+        Invulnerable(None)
         template(|context| {
             let gltf = context.resource::<PlayerAssets>().gltf.clone();
             Ok(WorldAssetRoot(gltf))
@@ -69,19 +75,24 @@ pub fn player() -> impl Scene {
     }
 }
 
-fn spawn_player(mut commands: Commands, player_assets: Res<PlayerAssets>) {
-    commands.spawn_scene(player());
-}
-
 fn on_player_bullet_hit(
     e: On<BulletHit>,
     mut commands: Commands,
     mut bullets: Query<(&BulletOwner, &BulletTarget, &mut ColorCharge), Without<Player>>,
-    player: Single<(Entity, &SkillState, &ColorCharge), With<Player>>,
+    player: Single<
+        (
+            Entity,
+            &SkillState,
+            &ColorCharge,
+            &mut PlayerHealth,
+            &mut Invulnerable,
+        ),
+        With<Player>,
+    >,
 ) {
     let bullet = e.bullet_entity;
     let (b_owner, _b_target, mut b_cc) = bullets.get_mut(bullet).unwrap();
-    let (player, skill_state, cc) = player.into_inner();
+    let (player, skill_state, cc, mut health, mut invulnerable) = player.into_inner();
     match skill_state.status {
         SkillStatus::Active => {
             if *b_cc == *cc {
@@ -95,7 +106,32 @@ fn on_player_bullet_hit(
             }
         }
         _ => {
-            println!("Bullet hit")
+            if let Some(_invulnerable) = invulnerable.0 {
+                // do nothing
+                // println!("Bullet hit, but invulnerable");
+            } else {
+                health.0 -= 10.0;
+                invulnerable.0 = Some(2.0);
+                // println!("Health: {}", health.0);
+            }
+            // println!("Bullet hit");
+        }
+    }
+}
+
+fn tick_invulnerable(mut query: Query<&mut Invulnerable>, time: Res<Time>) {
+    for mut inv in query.iter_mut() {
+        match inv.0 {
+            Some(t) => {
+                if t <= 0.0 {
+                    inv.0 = None;
+                } else {
+                    inv.0 = Some(t - time.delta_secs());
+                }
+            }
+            None => {
+                inv.0 = None;
+            }
         }
     }
 }
@@ -337,13 +373,14 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(PlayerAssetsPlugin)
-            .add_systems(Startup, spawn_player)
+            .add_systems(Startup, player.spawn())
             .add_systems(Startup, player_skills.spawn())
             .add_systems(FixedUpdate, apply_move)
             .add_systems(FixedUpdate, skill_transition);
         app.add_systems(FixedUpdate, copy_player_color_from_skills);
         app.add_systems(Update, color_decay);
         app.add_systems(Update, anim_move);
+        app.add_systems(Update, tick_invulnerable);
         // .add_systems(FixedUpdate, player_deflect_skill);
         // .add_observer(swat_left)
         // .add_observer(swat_right);

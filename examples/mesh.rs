@@ -1,7 +1,6 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::gltf::GltfPlugin;
 use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
-use bevy::input::InputPlugin;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
@@ -9,7 +8,7 @@ use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_jam_8::inputs::InputsPlugin;
 use bevy_jam_8::physics::ColorCharge;
-use bevy_jam_8::player::{PlayerPlugin, player};
+use bevy_jam_8::player::PlayerPlugin;
 use bevy_jam_8::player_assets::PlayerAssets;
 
 const CAMERA_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 10.0);

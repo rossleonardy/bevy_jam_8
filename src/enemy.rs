@@ -99,14 +99,15 @@ pub fn on_hit_deflect() -> impl Scene {
             if let Ok(mut shields) = shields.get_mut(e.target) {
                 if shields.0 > 0 {
                     shields.0 -= 1;
-                    let (entity, b_owner, b_target) = bullets.get(e.bullet_entity).unwrap();
+                    let (_, b_owner, b_target) = bullets.get(e.bullet_entity).unwrap();
                     commands.trigger(RetargetBullet {
                             bullet: e.bullet_entity,
                             new_target: b_owner.0,
                             new_owner: b_target.0,
                     });
                 }   else {
-
+                    // despawn
+                    commands.entity(e.target).despawn();
                 }
             }
         })
@@ -125,7 +126,7 @@ pub fn fire_straight_bullet_child() -> impl Scene {
         {
             let parent = match child_of_query.get(e.entity) {
                 Ok(childof) => childof.parent(),
-                _ => return ()
+                _ => { return }
             };
 
             let cc = *colors.get(parent).unwrap();
@@ -164,7 +165,7 @@ fn fire_singleton_bullet_child() -> impl Scene {
             }
             let parent = match child_of_query.get(e.entity) {
                 Ok(childof) => childof.parent(),
-                _ => return ()
+                _ => { return }
             };
 
             let cc = *colors.get(parent).unwrap();
@@ -189,7 +190,7 @@ fn fire_singleton_bullet_child() -> impl Scene {
 pub fn cycle_color_child() -> impl Scene {
     bsn! {
         Cooldown::repeat(3000)
-        on(|e: On<CooldownFinished>, mut commands: Commands,
+        on(|e: On<CooldownFinished>,
             query: Query<&ChildOf>,
             mut cc_query: Query<&mut ColorCharge>| {
             let child_of = query.get(e.entity).unwrap();

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_jam_8::player::Player;
-use bevy_jam_8::{bullets, enemy, inputs, physics, player, ui};
+use bevy_jam_8::{bullets, enemy, physics};
 
 fn setup(mut commands: Commands) {
     commands.spawn_scene(enemy::enemy_alpha());

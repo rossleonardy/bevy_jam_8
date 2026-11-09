@@ -7,7 +7,6 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy::asset::AssetMetaCheck;
 use bevy::camera::Hdr;
 use bevy::core_pipeline::tonemapping::Tonemapping;
-use bevy::ecs::system::entity_command::clear;
 use bevy::gltf::GltfPlugin;
 use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::input::common_conditions::input_toggle_active;
@@ -74,7 +73,6 @@ fn main() {
                         convert_coordinates: GltfConvertCoordinates {
                             rotate_meshes: true,
                             rotate_scene_entity: true,
-                            ..default()
                         },
                         ..default()
                     }

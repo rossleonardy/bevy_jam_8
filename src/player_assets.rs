@@ -1,4 +1,3 @@
-use crate::physics::ColorCharge;
 use bevy::gltf::GltfMaterialName;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::prelude::*;
@@ -23,7 +22,7 @@ pub struct PlayerAssets {
 const DEFAULT_GOLD: Srgba = Srgba::rgb(0.4, 0.3, 0.0);
 
 impl PlayerAssets {
-    fn get_color(self: &Self) -> Srgba {
+    fn get_color(&self) -> Srgba {
         // if active color scale is 0 return gold
         DEFAULT_GOLD.mix(&self.active_color, self.active_color_scale)
     }
@@ -54,7 +53,6 @@ pub type PlayerMaterial = ExtendedMaterial<StandardMaterial, PlayerExtension>;
 const CLOAK_PATH: &str = "cloak.glb";
 fn player_assets(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<PlayerMaterial>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
     asset_server: Res<AssetServer>,
@@ -69,8 +67,6 @@ fn player_assets(
         },
     });
 
-    let texture: Handle<Image> = asset_server.load("direction_arrow.png");
-    //let cuboid = Cuboid::new(0.5, 2., 0.5);
     let gltf = asset_server.load(GltfAssetLabel::Scene(0).from_asset(CLOAK_PATH));
 
     let forward_anim: Handle<AnimationClip> =
@@ -126,15 +122,10 @@ fn update_material(
 
 fn update_graph(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut AnimationPlayer)>,
+    mut query: Query<Entity, (With<AnimationPlayer>, Added<AnimationPlayer>)>,
     player_assets: Res<PlayerAssets>,
-    mut done: Local<bool>,
 ) {
-    if *done {
-        return;
-    }
-
-    for (entity, mut player) in query.iter_mut() {
+    for entity in query.iter_mut() {
         commands
             .entity(entity)
             .insert((AnimationGraphHandle(player_assets.animation_graph.clone()),));

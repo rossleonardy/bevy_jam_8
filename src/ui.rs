@@ -1,5 +1,5 @@
 use crate::physics::Cooldown;
-use crate::player::{BlueSkill, ColorSkills, GreenSkill, RedSkill};
+use crate::player::{BlueSkill, ColorSkills, GreenSkill, PlayerHealth, RedSkill};
 use bevy::color::palettes::basic::*;
 use bevy::prelude::*;
 
@@ -122,6 +122,9 @@ fn circle_parent() -> impl Scene {
     }
 }
 
+#[derive(Component, Default, Clone)]
+pub struct HealthBar;
+
 fn ui_scene() -> impl Scene {
     bsn! {
         #RootUi
@@ -133,6 +136,20 @@ fn ui_scene() -> impl Scene {
             grid_template_rows: RepeatedGridTrack::fr::<RepeatedGridTrack>(12, 1.0),
         }
         Children [
+            Node {
+                display: Display::Flex,
+                grid_column: GridPlacement::start_end(3, 11),
+                grid_row: GridPlacement::start_end(2, 3),
+            }
+            Children [
+                HealthBar
+                Node {
+                    width: percent(100.),
+                    height: px(16.),
+                }
+                BackgroundColor(GREEN)
+            ]
+            --
             Node {
                 display: Display::Flex,
                 justify_content: JustifyContent::Center,
@@ -202,6 +219,13 @@ fn blue_skill_update(
     };
 }
 
+fn health_bar_update(
+    health: Single<&PlayerHealth>,
+    mut health_bar: Single<&mut Node, With<HealthBar>>,
+) {
+    health_bar.width = Val::Percent(health.0);
+}
+
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, ui_scene.spawn());
@@ -210,5 +234,6 @@ impl Plugin for UiPlugin {
             (red_skill_update, green_skill_update, blue_skill_update),
         );
         app.add_systems(Update, rotate_sys);
+        app.add_systems(Update, health_bar_update);
     }
 }

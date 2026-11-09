@@ -12,11 +12,7 @@ fn setup(mut commands: Commands) {
     });
 }
 
-fn rotate_sys(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut i: Single<(&mut ColorSkills)>,
-    mut ui_parent: Single<&mut UiTransform, With<CircleParent>>,
-) {
+fn rotate_sys(keys: Res<ButtonInput<KeyCode>>, mut i: Single<(&mut ColorSkills)>) {
     if keys.just_pressed(KeyCode::ArrowLeft) {
         i.0 -= 1;
     }

@@ -1,4 +1,4 @@
-use crate::enemy::{SpeciesGamma, cycle_color_child, enemy_alpha, enemy_beta, enemy_gamma};
+use crate::enemy::{enemy_alpha, enemy_beta, enemy_gamma};
 use crate::physics::ColorCharge;
 use bevy::prelude::*;
 use std::collections::VecDeque;
@@ -72,13 +72,13 @@ impl Default for SpawnQueue {
                     ]
                 }
                 .into(),
-                GAMMA_TEST(),
+                gamma_test(),
             ]),
         }
     }
 }
 
-fn GAMMA_TEST() -> Box<dyn Scene> {
+fn gamma_test() -> Box<dyn Scene> {
     bsn! {
         @EnemyGroup
         Children [
