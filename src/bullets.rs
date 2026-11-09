@@ -187,7 +187,7 @@ pub fn aim_bullet(origin: Vec3, target: Vec3) -> Vec3 {
 
 fn despawn_bullets(mut commands: Commands, bullet_query: Query<(&Bullet, &Transform, Entity)>) {
     for (_bullet, transform, entity) in bullet_query.iter() {
-        if transform.translation.x.abs() > 100. || transform.translation.z.abs() > 100. {
+        if transform.translation.x.abs() > 50. || transform.translation.z.abs() > 50. {
             commands.get_entity(entity).unwrap().despawn()
         }
     }
