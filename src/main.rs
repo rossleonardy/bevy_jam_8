@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_jam_8::{bullets, enemy, inputs, physics, player, spawner, ui};
+use bevy_jam_8::{bullets, enemy, inputs, physics, player, spawner, states, ui};
 use bevy_transform_interpolation::prelude::*;
 
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
@@ -95,6 +95,7 @@ fn main() {
         .add_plugins(bullets::BulletsPlugin)
         .add_plugins(ui::UiPlugin)
         .add_plugins(spawner::SpawnerPlugin)
+        .add_plugins(states::StatesPlugin)
         .add_systems(Startup, (init_scene.spawn(), spawn_stage).chain())
         .add_systems(Update, camera_pan)
         .run();

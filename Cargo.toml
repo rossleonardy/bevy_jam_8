@@ -8,6 +8,7 @@ bevy = { version = "0.20.1", features = ["dynamic_linking"] }
 bevy-inspector-egui = "0.38"
 bevy_enhanced_input = "0.27.2"
 bevy_transform_interpolation = "0.6.0"
+rand = "0.10.3"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

@@ -5,4 +5,5 @@ pub mod physics;
 pub mod player;
 pub mod player_assets;
 pub mod spawner;
+pub mod states;
 pub mod ui;

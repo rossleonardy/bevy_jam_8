@@ -3,6 +3,7 @@ use crate::inputs;
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
 use crate::player_assets::{PlayerAssets, PlayerAssetsPlugin};
+use crate::states::AppState;
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -322,27 +323,31 @@ pub fn copy_player_color_from_skills(
 }
 
 pub fn player_skills() -> impl Scene {
+    let mut red_cd = Cooldown::once(1000);
+    red_cd.0.reset();
+    red_cd.0.pause();
+
     bsn! {
         #ColorSkills
         ColorSkills
         Children [
             #RedSkill
             RedSkill
-            Cooldown::once(2000)
+            red_cd
             on(|_e: On<CooldownFinished>| {
                 println!("Red skill cooldown finished");
             })
             --
             #GreenSkill
             GreenSkill
-            Cooldown::once(2000)
+            Cooldown::once(1000)
             on(|_e: On<CooldownFinished>| {
                 println!("Green skill cooldown finished");
             })
             --
             #BlueSkill
             BlueSkill
-            Cooldown::once(2000)
+            Cooldown::once(1000)
             on(|_e: On<CooldownFinished>| {
                 println!("Blue skill cooldown finished");
             })
@@ -369,6 +374,18 @@ pub fn color_decay(
     }
 }
 
+fn check_game_over(health: Single<&PlayerHealth>, mut next_state: ResMut<NextState<AppState>>) {
+    if health.0 <= 0.0 {
+        println!("Game over!");
+        next_state.set(AppState::GameOver);
+    }
+}
+
+fn despawn_player(mut commands: Commands, player: Single<Entity, With<Player>>) {
+    let player = player.into_inner();
+    commands.entity(player).despawn();
+}
+
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
@@ -381,6 +398,8 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Update, color_decay);
         app.add_systems(Update, anim_move);
         app.add_systems(Update, tick_invulnerable);
+        app.add_systems(Update, check_game_over.run_if(in_state(AppState::InGame)));
+        app.add_systems(OnEnter(AppState::GameOver), despawn_player);
         // .add_systems(FixedUpdate, player_deflect_skill);
         // .add_observer(swat_left)
         // .add_observer(swat_right);

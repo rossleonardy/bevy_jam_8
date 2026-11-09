@@ -187,35 +187,35 @@ pub fn aim_bullet(origin: Vec3, target: Vec3) -> Vec3 {
 
 fn despawn_bullets(mut commands: Commands, bullet_query: Query<(&Bullet, &Transform, Entity)>) {
     for (_bullet, transform, entity) in bullet_query.iter() {
-        if transform.translation.x.abs() > 50. || transform.translation.z.abs() > 50. {
+        if transform.translation.x.abs() > 20. || transform.translation.z.abs() > 20. {
             commands.get_entity(entity).unwrap().despawn()
         }
     }
 }
 
-fn debug_bullets(
-    _commands: Commands,
-    mut gizmos: Gizmos,
-    bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>,
-) {
-    for (_bullet, cc, transform) in bullet_query.iter() {
-        gizmos.sphere(
-            Isometry3d::new(transform.translation, transform.rotation),
-            0.5,
-            cc.debug_color(),
-        );
-    }
-}
-
-fn debug_hitboxes(mut gizmos: Gizmos, hitboxes: Query<(&Hitbox, &ColorCharge, &Transform)>) {
-    for (hitbox, cc, transform) in hitboxes.iter() {
-        gizmos.sphere(
-            Isometry3d::new(transform.translation, transform.rotation),
-            hitbox.0,
-            cc.debug_color(),
-        );
-    }
-}
+// fn debug_bullets(
+//     _commands: Commands,
+//     mut gizmos: Gizmos,
+//     bullet_query: Query<(&Bullet, &ColorCharge, &Transform)>,
+// ) {
+//     for (_bullet, cc, transform) in bullet_query.iter() {
+//         gizmos.sphere(
+//             Isometry3d::new(transform.translation, transform.rotation),
+//             0.5,
+//             cc.debug_color(),
+//         );
+//     }
+// }
+//
+// fn debug_hitboxes(mut gizmos: Gizmos, hitboxes: Query<(&Hitbox, &ColorCharge, &Transform)>) {
+//     for (hitbox, cc, transform) in hitboxes.iter() {
+//         gizmos.sphere(
+//             Isometry3d::new(transform.translation, transform.rotation),
+//             hitbox.0,
+//             cc.debug_color(),
+//         );
+//     }
+// }
 
 #[derive(Event)]
 pub struct RetargetBullet {
@@ -251,8 +251,8 @@ impl Plugin for BulletsPlugin {
         let _assets = app.get_asset_server();
         app.init_resource::<BulletAssets>();
         app.add_systems(FixedUpdate, despawn_bullets);
-        app.add_systems(FixedUpdate, debug_bullets);
-        app.add_systems(FixedUpdate, debug_hitboxes);
+        // app.add_systems(FixedUpdate, debug_bullets);
+        // app.add_systems(FixedUpdate, debug_hitboxes);
         app.add_systems(FixedUpdate, bullet_collisions);
         app.add_observer(on_retarget_bullet);
     }

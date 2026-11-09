@@ -3,8 +3,21 @@ use crate::physics::*;
 use crate::player::*;
 use bevy::prelude::*;
 
-#[derive(Component, Default, Clone)]
+#[derive(SceneComponent, Default, Clone)]
 pub struct Enemy;
+impl Enemy {
+    fn scene() -> impl Scene {
+        bsn! {
+            #Enemy
+            Transform::default()
+            Hitbox
+            ColorCharge::RED
+            Children [
+                @cycle_color_child()
+            ]
+        }
+    }
+}
 
 #[derive(Component, Default, Clone)]
 pub struct SpeciesAlpha;
@@ -12,9 +25,9 @@ pub struct SpeciesAlpha;
 // random spray
 pub fn enemy_alpha() -> impl Scene {
     bsn! {
+        @Enemy
         SpeciesAlpha
         WorldAssetRoot("alpha.glb#Scene0")
-        Transform::default()
         Cooldown::repeat(200)
         Hitbox
         SpinY
@@ -33,8 +46,9 @@ pub struct SpeciesBeta;
 // stalker
 pub fn enemy_beta() -> impl Scene {
     bsn! {
+        @Enemy
         SpeciesBeta
-        WorldAssetRoot("alpha.glb#Scene0")
+        WorldAssetRoot("beta.glb#Scene0")
         Transform::default()
         Cooldown::repeat(500)
         Hitbox
@@ -54,12 +68,11 @@ pub struct SpeciesGamma;
 
 pub fn enemy_gamma() -> impl Scene {
     bsn! {
+        @Enemy
         SpeciesGamma
-        WorldAssetRoot("alpha.glb#Scene0")
-        Transform::default()
+        WorldAssetRoot("gamma.glb#Scene0")
         Hitbox(3.0)
         LookAtPlayer
-        ColorCharge::RED
         @on_hit_deflect()
         Children [
             @fire_singleton_bullet_child()

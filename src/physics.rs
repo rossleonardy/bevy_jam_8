@@ -1,5 +1,5 @@
-use bevy::color::palettes::basic::{BLACK, BLUE, GREEN, WHITE};
-use bevy::color::palettes::css::{GRAY, RED};
+use bevy::color::palettes::basic::{BLACK, WHITE};
+use bevy::color::palettes::css::GRAY;
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -25,16 +25,16 @@ pub enum ColorCharge {
 }
 
 impl ColorCharge {
-    pub(crate) fn debug_color(&self) -> Color {
-        match self {
-            ColorCharge::NONE => GRAY.into(),
-            ColorCharge::RED => RED.into(),
-            ColorCharge::GREEN => GREEN.into(),
-            ColorCharge::BLUE => BLUE.into(),
-            ColorCharge::WHITE => WHITE.into(),
-            ColorCharge::BLACK => BLACK.into(),
-        }
-    }
+    // pub(crate) fn debug_color(&self) -> Color {
+    //     match self {
+    //         ColorCharge::NONE => GRAY.into(),
+    //         ColorCharge::RED => RED.into(),
+    //         ColorCharge::GREEN => GREEN.into(),
+    //         ColorCharge::BLUE => BLUE.into(),
+    //         ColorCharge::WHITE => WHITE.into(),
+    //         ColorCharge::BLACK => BLACK.into(),
+    //     }
+    // }
 
     pub fn next(&self) -> Self {
         match self {

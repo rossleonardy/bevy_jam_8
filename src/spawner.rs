@@ -1,4 +1,4 @@
-use crate::enemy::{enemy_alpha, enemy_beta, enemy_gamma};
+use crate::enemy::{EnemyShields, SpinY, enemy_alpha, enemy_beta, enemy_gamma};
 use crate::physics::ColorCharge;
 use bevy::prelude::*;
 use std::collections::VecDeque;
@@ -29,18 +29,40 @@ impl Default for SpawnQueue {
     fn default() -> Self {
         Self {
             queue: VecDeque::from([
-                bsn! {
-                    @EnemyGroup
-                    Transform::default()
-                    Children [
-                        @enemy_alpha()
-                        ColorCharge::BLUE
-                        Transform::from_translation(stage_edge_3(30.))
-                    ]
-                    #TestGroup
-                }
-                .into(),
-                bsn! {
+                xxa(),
+                axx(),
+                axa(),
+                xbx(),
+                bxa(),
+                axb(),
+                aaa(),
+                aba(),
+                xgx(),
+                gxa(),
+                axg(),
+                bab(),
+                gxg(),
+                xgx_final(),
+            ]),
+        }
+    }
+}
+
+fn xxa() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Transform::default()
+        Children [
+            @enemy_alpha()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(30.))
+        ]
+    }
+    .into()
+}
+
+fn axx() -> Box<dyn Scene> {
+    bsn! {
                     @EnemyGroup
                     Transform::default()
                     Children [
@@ -48,9 +70,12 @@ impl Default for SpawnQueue {
                         ColorCharge::RED
                         Transform::from_translation(stage_edge_3(150.))
                     ]
-                }
-                .into(),
-                bsn! {
+    }
+    .into()
+}
+
+fn axa() -> Box<dyn Scene> {
+    bsn! {
                     @EnemyGroup
                     Children [
                         @enemy_alpha()
@@ -61,30 +86,180 @@ impl Default for SpawnQueue {
                         ColorCharge::RED
                         Transform::from_translation(stage_edge_3(135.))
                     ]
-                }
-                .into(),
-                bsn! {
-                    @EnemyGroup
-                    Children [
-                        @enemy_beta()
-                        ColorCharge::RED
-                        Transform::from_translation(stage_edge_3(90.))
-                    ]
-                }
-                .into(),
-                gamma_test(),
-            ]),
-        }
     }
+    .into()
 }
 
-fn gamma_test() -> Box<dyn Scene> {
+fn xbx() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_beta()
+            ColorCharge::RED
+            Transform::from_translation(stage_edge_3(90.))
+        ]
+    }
+    .into()
+}
+
+fn bxa() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_beta()
+            ColorCharge::GREEN
+            Transform::from_translation(stage_edge_3(180.))
+            --
+            @enemy_alpha()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(15.))
+        ]
+    }
+    .into()
+}
+
+fn axb() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_alpha()
+            ColorCharge::RED
+            Transform::from_translation(stage_edge_3(150.))
+            --
+            @enemy_beta()
+            ColorCharge::GREEN
+            Transform::from_translation(stage_edge_3(45.))
+        ]
+    }
+    .into()
+}
+
+fn aaa() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_alpha()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(195.))
+            --
+            @enemy_alpha()
+            ColorCharge::RED
+            Transform::from_translation(stage_edge_3(105.))
+            --
+            @enemy_alpha()
+            ColorCharge::GREEN
+            Transform::from_translation(stage_edge_3(15.))
+        ]
+    }
+    .into()
+}
+
+fn aba() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_alpha()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(150.))
+            --
+            @enemy_beta()
+            ColorCharge::RED
+            Transform::from_translation(stage_edge_3(75.))
+            --
+            @enemy_alpha()
+            ColorCharge::GREEN
+            Transform::from_translation(stage_edge_3(-15.))
+        ]
+    }
+    .into()
+}
+
+fn xgx() -> Box<dyn Scene> {
     bsn! {
         @EnemyGroup
         Children [
             @enemy_gamma()
             ColorCharge::RED
+            Transform::from_translation(stage_edge_3(90.))
+        ]
+    }
+    .into()
+}
+
+fn gxa() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_gamma()
+            ColorCharge::GREEN
             Transform::from_translation(stage_edge_3(150.))
+            --
+            @enemy_alpha()
+            SpinY(-4.)
+            Transform::from_translation(stage_edge_3(30.))
+        ]
+    }
+    .into()
+}
+
+fn axg() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_alpha()
+            ColorCharge::RED
+            SpinY(10.)
+            Transform::from_translation(stage_edge_3(180.))
+            --
+            @enemy_gamma()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(15.))
+        ]
+    }
+    .into()
+}
+
+fn bab() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_beta()
+            ColorCharge::BLUE
+            Transform::from_translation(stage_edge_3(120.))
+            --
+            @enemy_alpha()
+            ColorCharge::GREEN
+            Transform::from_translation(stage_edge_3(90.))
+            --
+            @enemy_beta()
+            ColorCharge::RED
+            Transform::from_translation(stage_edge_3(60.))
+        ]
+    }
+    .into()
+}
+
+fn gxg() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+    Children [
+        @enemy_gamma()
+        Transform::from_translation(stage_edge_3(150.))
+        --
+        @enemy_gamma()
+        ColorCharge::GREEN
+        Transform::from_translation(stage_edge_3(30.))
+    ]}
+    .into()
+}
+
+fn xgx_final() -> Box<dyn Scene> {
+    bsn! {
+        @EnemyGroup
+        Children [
+            @enemy_gamma()
+            Transform::from_translation(stage_edge_3(90.))
+            EnemyShields(5)
         ]
     }
     .into()
