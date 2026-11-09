@@ -53,10 +53,10 @@ fn setup(mut commands: Commands) {
                 Binding(GamepadButton::LeftTrigger)
                 ~Press
                 --
-                Binding(KeyCode::KeyQ)
+                Binding(KeyCode::KeyF)
                 ~Press
                 --
-                Binding(KeyCode::Comma)
+                Binding(KeyCode::KeyJ)
                 ~Press
             ]
             --
@@ -65,10 +65,10 @@ fn setup(mut commands: Commands) {
                 Binding(GamepadButton::RightTrigger)
                 ~Press
                 --
-                Binding(KeyCode::KeyE)
+                Binding(KeyCode::KeyG)
                 ~Press
                 --
-                Binding(KeyCode::Period)
+                Binding(KeyCode::KeyK)
                 ~Press
             ]
         ]
