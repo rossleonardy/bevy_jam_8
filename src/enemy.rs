@@ -218,13 +218,13 @@ pub fn spin_y_ai(mut enemies: Query<(&mut Transform, &SpinY)>) {
     }
 }
 
-
 #[derive(Component, Default, Clone)]
 pub struct LookAtPlayer;
 
 pub fn look_at_player(
     mut enemies: Query<(&mut Transform, &LookAtPlayer), Without<Player>>,
-    player: Single<&Transform, With<Player>>) {
+    player: Single<&Transform, With<Player>>,
+) {
     for (mut transform, _) in enemies.iter_mut() {
         transform.look_at(player.translation, Vec3::Y);
     }

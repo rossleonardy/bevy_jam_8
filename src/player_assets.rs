@@ -1,9 +1,9 @@
+use crate::physics::ColorCharge;
 use bevy::gltf::GltfMaterialName;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::prelude::*;
 use bevy::render::render_resource::AsBindGroup;
 use bevy::shader::ShaderRef;
-use crate::physics::ColorCharge;
 
 #[derive(Resource, Default)]
 pub struct PlayerAssets {
@@ -29,7 +29,6 @@ impl PlayerAssets {
     }
 }
 
-
 const PLAYER_SHADER: &str = "player_shader.wesl";
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone, Default)]
@@ -42,8 +41,12 @@ pub struct PlayerExtension {
 }
 
 impl MaterialExtension for PlayerExtension {
-    fn fragment_shader() -> ShaderRef { PLAYER_SHADER.into() }
-    fn deferred_fragment_shader() -> ShaderRef { PLAYER_SHADER.into() }
+    fn fragment_shader() -> ShaderRef {
+        PLAYER_SHADER.into()
+    }
+    fn deferred_fragment_shader() -> ShaderRef {
+        PLAYER_SHADER.into()
+    }
 }
 
 pub type PlayerMaterial = ExtendedMaterial<StandardMaterial, PlayerExtension>;
@@ -60,18 +63,22 @@ fn player_assets(
     // let _capsule = Capsule3d::new(crate::player::P_RADIUS, crate::player::P_HEIGHT - 2.0 * crate::player::P_RADIUS);
     let mat = materials.add(ExtendedMaterial {
         base: StandardMaterial::default(),
-        extension: PlayerExtension {end_color: Srgba::rgb(0.9, 0.8, 0.0).into(), mask}
+        extension: PlayerExtension {
+            end_color: Srgba::rgb(0.9, 0.8, 0.0).into(),
+            mask,
+        },
     });
 
     let texture: Handle<Image> = asset_server.load("direction_arrow.png");
     //let cuboid = Cuboid::new(0.5, 2., 0.5);
-    let gltf = asset_server.load(
-        GltfAssetLabel::Scene(0).from_asset(CLOAK_PATH),
-    );
+    let gltf = asset_server.load(GltfAssetLabel::Scene(0).from_asset(CLOAK_PATH));
 
-    let forward_anim: Handle<AnimationClip> = asset_server.load(GltfAssetLabel::Animation(0).from_asset(CLOAK_PATH));
-    let swat_l_anim: Handle<AnimationClip> = asset_server.load(GltfAssetLabel::Animation(1).from_asset(CLOAK_PATH));
-    let swat_r_anim: Handle<AnimationClip> = asset_server.load(GltfAssetLabel::Animation(2).from_asset(CLOAK_PATH));
+    let forward_anim: Handle<AnimationClip> =
+        asset_server.load(GltfAssetLabel::Animation(0).from_asset(CLOAK_PATH));
+    let swat_l_anim: Handle<AnimationClip> =
+        asset_server.load(GltfAssetLabel::Animation(1).from_asset(CLOAK_PATH));
+    let swat_r_anim: Handle<AnimationClip> =
+        asset_server.load(GltfAssetLabel::Animation(2).from_asset(CLOAK_PATH));
 
     let mut animation_graph = AnimationGraph::new();
     let forward_i = animation_graph.add_clip(forward_anim.clone(), 1.0, animation_graph.root);
@@ -97,7 +104,8 @@ fn swap_materials(
     for (entity, name) in &added {
         println!("Name: {}", name.0);
         if name.0 == "PlayerMaterial" {
-            commands.entity(entity)
+            commands
+                .entity(entity)
                 .remove::<MeshMaterial3d<StandardMaterial>>()
                 .insert(MeshMaterial3d(player_assets.material.clone()));
         }
@@ -127,9 +135,9 @@ fn update_graph(
     }
 
     for (entity, mut player) in query.iter_mut() {
-        commands.entity(entity).insert((
-            AnimationGraphHandle(player_assets.animation_graph.clone()),
-        ));
+        commands
+            .entity(entity)
+            .insert((AnimationGraphHandle(player_assets.animation_graph.clone()),));
     }
 }
 

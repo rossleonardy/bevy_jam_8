@@ -35,7 +35,7 @@ impl ColorCharge {
             ColorCharge::BLACK => BLACK.into(),
         }
     }
-    
+
     pub fn next(&self) -> Self {
         match self {
             ColorCharge::NONE => ColorCharge::NONE,
@@ -46,7 +46,7 @@ impl ColorCharge {
             ColorCharge::BLACK => ColorCharge::BLACK,
         }
     }
-    
+
     pub fn prev(&self) -> Self {
         match self {
             ColorCharge::NONE => ColorCharge::NONE,

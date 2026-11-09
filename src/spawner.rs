@@ -1,4 +1,4 @@
-use crate::enemy::{cycle_color_child, enemy_alpha, enemy_beta, enemy_gamma, SpeciesGamma};
+use crate::enemy::{SpeciesGamma, cycle_color_child, enemy_alpha, enemy_beta, enemy_gamma};
 use crate::physics::ColorCharge;
 use bevy::prelude::*;
 use std::collections::VecDeque;
@@ -70,7 +70,8 @@ impl Default for SpawnQueue {
                         ColorCharge::RED
                         Transform::from_translation(stage_edge_3(90.))
                     ]
-                }.into(),
+                }
+                .into(),
                 GAMMA_TEST(),
             ]),
         }
@@ -85,7 +86,8 @@ fn GAMMA_TEST() -> Box<dyn Scene> {
             ColorCharge::RED
             Transform::from_translation(stage_edge_3(150.))
         ]
-    }.into()
+    }
+    .into()
 }
 
 #[derive(SceneComponent, Default, Clone, Reflect)]

@@ -1,15 +1,15 @@
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::gltf::GltfPlugin;
 use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
-use bevy::input::common_conditions::input_toggle_active;
 use bevy::input::InputPlugin;
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_jam_8::inputs::InputsPlugin;
 use bevy_jam_8::physics::ColorCharge;
-use bevy_jam_8::player::{player, PlayerPlugin};
+use bevy_jam_8::player::{PlayerPlugin, player};
 use bevy_jam_8::player_assets::PlayerAssets;
 
 const CAMERA_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 10.0);
@@ -28,10 +28,7 @@ fn mesh_scene() -> impl SceneList {
     }
 }
 
-fn test_colors(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut player_assets: ResMut<PlayerAssets>,
-) {
+fn test_colors(keys: Res<ButtonInput<KeyCode>>, mut player_assets: ResMut<PlayerAssets>) {
     if keys.just_pressed(KeyCode::KeyR) {
         player_assets.active_color_scale = 1.0;
         player_assets.active_color = ColorCharge::RED.into();
@@ -42,7 +39,6 @@ fn test_colors(
         player_assets.active_color_scale = 1.0;
         player_assets.active_color = ColorCharge::BLUE.into();
     }
-
 }
 
 fn test_anims(
@@ -50,7 +46,6 @@ fn test_anims(
     mut player_assets: ResMut<PlayerAssets>,
     anim_player: Query<(&mut AnimationPlayer)>,
 ) {
-
     if keys.just_pressed(KeyCode::Digit7) {
         for mut player in anim_player {
             player.play(player_assets.forward_i).replay();

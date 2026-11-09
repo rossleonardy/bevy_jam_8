@@ -2,10 +2,10 @@ use crate::bullets::{BulletHit, BulletOwner, BulletTarget, Hitbox, RetargetBulle
 use crate::inputs;
 use crate::inputs::AccumulatedLR;
 use crate::physics::*;
+use crate::player_assets::{PlayerAssets, PlayerAssetsPlugin, PlayerMaterial};
+use bevy::gltf::gltf::Animation;
 use bevy::prelude::*;
 use std::time::Duration;
-use bevy::gltf::gltf::Animation;
-use crate::player_assets::{PlayerAssets, PlayerAssetsPlugin, PlayerMaterial};
 
 const RUN_SPEED: f32 = 7.0;
 const ACCELERATION: f32 = 18.0;
@@ -14,8 +14,6 @@ const TURN_RATE: f32 = 450_f32.to_radians();
 
 const P_HEIGHT: f32 = 1.8;
 const P_RADIUS: f32 = 0.3;
-
-
 
 #[derive(Component, Default, Clone)]
 #[require(Transform, Velocity, Hitbox, ColorCharge)]
@@ -72,7 +70,6 @@ pub fn player() -> impl Scene {
 }
 
 fn spawn_player(mut commands: Commands, player_assets: Res<PlayerAssets>) {
-
     commands.spawn_scene(player());
 }
 
@@ -140,7 +137,6 @@ fn anim_move(
     player_assets: Res<PlayerAssets>,
     mut anim_player: Populated<&mut AnimationPlayer>,
     player: Single<&Velocity, With<Player>>,
-
 ) {
     for mut anim_player in anim_player.iter_mut() {
         if player.0.length().abs() > 0.01 {
@@ -150,7 +146,6 @@ fn anim_move(
         }
     }
 }
-
 
 fn skill_transition(
     time: Res<Time>,
@@ -177,7 +172,9 @@ fn skill_transition(
                 let prev = color_skills.0 - 1;
                 let skill_child = skill_children[color_skills.0.rem_euclid(len) as usize];
                 let prev_skill_child = skill_children[prev.rem_euclid(len) as usize];
-                let [mut skill_cooldown, mut prev_skill_cooldown] = skill_cooldowns.get_many_mut([skill_child, prev_skill_child]).unwrap();
+                let [mut skill_cooldown, mut prev_skill_cooldown] = skill_cooldowns
+                    .get_many_mut([skill_child, prev_skill_child])
+                    .unwrap();
                 if prev_skill_cooldown.0.is_finished() {
                     println!("LEFT OK!");
                     color_skills.0 -= 1;
@@ -198,7 +195,9 @@ fn skill_transition(
                 let next = color_skills.0 + 1;
                 let skill_child = skill_children[color_skills.0.rem_euclid(len) as usize];
                 let next_skill_child = skill_children[next.rem_euclid(len) as usize];
-                let [mut skill_cooldown, mut next_skill_cooldown] = skill_cooldowns.get_many_mut([skill_child, next_skill_child]).unwrap();
+                let [mut skill_cooldown, mut next_skill_cooldown] = skill_cooldowns
+                    .get_many_mut([skill_child, next_skill_child])
+                    .unwrap();
                 if next_skill_cooldown.0.is_finished() {
                     println!("RIGHT OK!");
                     color_skills.0 += 1;
@@ -322,10 +321,14 @@ pub fn color_decay(
 ) {
     match skill_state.status {
         SkillStatus::Active | SkillStatus::Recovery => {
-            player_assets.active_color_scale.smooth_nudge(&1.0_f32, 4.0, time.delta_secs());
+            player_assets
+                .active_color_scale
+                .smooth_nudge(&1.0_f32, 4.0, time.delta_secs());
         }
         _ => {
-            player_assets.active_color_scale.smooth_nudge(&0.0_f32, 0.6, time.delta_secs());
+            player_assets
+                .active_color_scale
+                .smooth_nudge(&0.0_f32, 0.6, time.delta_secs());
         }
     }
 }
@@ -333,8 +336,7 @@ pub fn color_decay(
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(PlayerAssetsPlugin)
+        app.add_plugins(PlayerAssetsPlugin)
             .add_systems(Startup, spawn_player)
             .add_systems(Startup, player_skills.spawn())
             .add_systems(FixedUpdate, apply_move)

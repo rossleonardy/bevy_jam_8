@@ -153,7 +153,11 @@ fn red_skill_update(
     red_ui: Single<(&mut BackgroundColor, &mut Outline), With<RedSkill>>,
 ) {
     let (mut background, mut outline) = red_ui.into_inner();
-    let f = if red_cooldown.0.fraction() == 1.0 { 1.0 } else { red_cooldown.0.fraction() * 0.5 };
+    let f = if red_cooldown.0.fraction() == 1.0 {
+        1.0
+    } else {
+        red_cooldown.0.fraction() * 0.5
+    };
     background.0 = Color::srgb(f, 0.0, 0.0);
     outline.color = if red_cooldown.0.is_finished() {
         Color::WHITE
@@ -167,7 +171,11 @@ fn green_skill_update(
     green_ui: Single<(&mut BackgroundColor, &mut Outline), With<GreenSkill>>,
 ) {
     let (mut background, mut outline) = green_ui.into_inner();
-    let f = if green_cooldown.0.fraction() == 1.0 { 1.0 } else { green_cooldown.0.fraction() * 0.5 };
+    let f = if green_cooldown.0.fraction() == 1.0 {
+        1.0
+    } else {
+        green_cooldown.0.fraction() * 0.5
+    };
     background.0 = Color::srgb(0.0, f, 0.0);
     outline.color = if green_cooldown.0.is_finished() {
         Color::WHITE
@@ -181,7 +189,11 @@ fn blue_skill_update(
     blue_ui: Single<(&mut BackgroundColor, &mut Outline), With<BlueSkill>>,
 ) {
     let (mut background, mut outline) = blue_ui.into_inner();
-    let f = if blue_cooldown.0.fraction() == 1.0 { 1.0 } else { blue_cooldown.0.fraction() * 0.5 };
+    let f = if blue_cooldown.0.fraction() == 1.0 {
+        1.0
+    } else {
+        blue_cooldown.0.fraction() * 0.5
+    };
     background.0 = Color::srgb(0.0, 0.0, f);
     outline.color = if blue_cooldown.0.is_finished() {
         Color::WHITE
