@@ -11,6 +11,8 @@ use bevy::gltf::convert_coordinates::GltfConvertCoordinates;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::post_process::bloom::Bloom;
 use std::f32::consts::FRAC_PI_2;
+use bevy::camera::Hdr;
+use bevy::ecs::system::entity_command::clear;
 
 fn spawn_stage(
     mut commands: Commands,
@@ -20,7 +22,7 @@ fn spawn_stage(
     commands.spawn((
         Name("Stage".into()),
         Mesh3d(meshes.add(Ellipse::new(12., 8.))),
-        MeshMaterial3d(materials.add(Color::srgb(0.2, 0.2, 0.2))),
+        MeshMaterial3d(materials.add(Color::srgb(0.3, 0.3, 0.3))),
         Transform {
             translation: Vec3::new(0.0, -1.0, 0.0),
             rotation: Quat::from_rotation_x(-FRAC_PI_2),
@@ -34,12 +36,21 @@ const CAMERA_OFFSET: Vec3 = Vec3::new(0.0, 14.0, 15.0);
 fn init_scene() -> impl SceneList {
     bsn_list! {
         Camera3d
+        Camera {
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.03, 0.03, 0.03))
+        }
         Tonemapping::TonyMcMapface
-        Bloom::NATURAL
+        Bloom::OLD_SCHOOL
         Transform::from_translation(CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y)
+        GlobalAmbientLight::default()
+        Hdr
+        // --
+        // PointLight
+        // Transform::from_xyz(0.0, 10.0, 0.0)
         --
-        PointLight
-        Transform::from_xyz(0.0, 10.0, 0.0)
+        #Light
+        SpotLight
+        Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y)
     }
 }
 
@@ -62,6 +73,7 @@ fn main() {
                     GltfPlugin {
                         convert_coordinates: GltfConvertCoordinates {
                             rotate_meshes: true,
+                            rotate_scene_entity: true,
                             ..default()
                         },
                         ..default()

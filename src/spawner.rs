@@ -1,4 +1,4 @@
-use crate::enemy::enemy_alpha;
+use crate::enemy::{cycle_color_child, enemy_alpha};
 use crate::physics::ColorCharge;
 use bevy::prelude::*;
 use std::collections::VecDeque;
@@ -63,6 +63,17 @@ impl Default for SpawnQueue {
                     ]
                 }
                 .into(),
+                bsn! {
+                    @EnemyGroup
+                    Children [
+                        @enemy_alpha()
+                        ColorCharge::RED
+                        Transform::from_translation(stage_edge_3(90.))
+                        Children [
+                            @cycle_color_child()
+                        ]
+                    ]
+                }.into(),
             ]),
         }
     }

@@ -35,6 +35,41 @@ impl ColorCharge {
             ColorCharge::BLACK => BLACK.into(),
         }
     }
+    
+    pub fn next(&self) -> Self {
+        match self {
+            ColorCharge::NONE => ColorCharge::NONE,
+            ColorCharge::RED => ColorCharge::GREEN,
+            ColorCharge::GREEN => ColorCharge::BLUE,
+            ColorCharge::BLUE => ColorCharge::RED,
+            ColorCharge::WHITE => ColorCharge::WHITE,
+            ColorCharge::BLACK => ColorCharge::BLACK,
+        }
+    }
+    
+    pub fn prev(&self) -> Self {
+        match self {
+            ColorCharge::NONE => ColorCharge::NONE,
+            ColorCharge::RED => ColorCharge::BLUE,
+            ColorCharge::GREEN => ColorCharge::RED,
+            ColorCharge::BLUE => ColorCharge::GREEN,
+            ColorCharge::WHITE => ColorCharge::WHITE,
+            ColorCharge::BLACK => ColorCharge::BLACK,
+        }
+    }
+}
+
+impl From<ColorCharge> for Srgba {
+    fn from(cc: ColorCharge) -> Self {
+        match cc {
+            ColorCharge::NONE => GRAY.into(),
+            ColorCharge::RED => Srgba::rgb(0.95, 0.35, 0.3),
+            ColorCharge::GREEN => Srgba::rgb(0.375, 0.7, 0.35),
+            ColorCharge::BLUE => Srgba::rgb(0.4, 0.6, 1.0),
+            ColorCharge::WHITE => WHITE.into(),
+            ColorCharge::BLACK => BLACK.into(),
+        }
+    }
 }
 
 #[derive(Component, Default, Clone)]

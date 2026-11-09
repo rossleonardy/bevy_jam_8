@@ -12,7 +12,7 @@ pub struct SpeciesAlpha;
 pub fn enemy_alpha() -> impl Scene {
     bsn! {
         SpeciesAlpha
-        WorldAssetRoot("enemy_alpha.glb#Scene0")
+        WorldAssetRoot("alpha.glb#Scene0")
         Transform::default()
         Cooldown::repeat(200)
         Hitbox
@@ -47,6 +47,21 @@ pub fn enemy_alpha() -> impl Scene {
                 _ => { /* do nothing */ }
             }
 
+        })
+    }
+}
+
+pub fn cycle_color_child() -> impl Scene {
+    bsn! {
+        Cooldown::repeat(3000)
+        on(|e: On<CooldownFinished>, mut commands: Commands,
+            query: Query<&ChildOf>,
+            mut cc_query: Query<&mut ColorCharge>| {
+            let child_of = query.get(e.entity).unwrap();
+            let parent = child_of.parent();
+            if let Ok(mut cc) = cc_query.get_mut(parent) {
+                *cc = cc.next();
+            }
         })
     }
 }
